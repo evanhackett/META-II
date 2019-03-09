@@ -486,7 +486,7 @@ function StartIntCompile() {
   InitIO()
   pc = 0
   Interpret()
-  console.log(outbuf)
+  return outbuf
 }
 
-StartIntCompile()
+module.exports = StartIntCompile
