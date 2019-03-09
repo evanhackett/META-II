@@ -469,12 +469,12 @@ function Interpret ()
   }
 }
 
-function InitIO () {
+function InitIO (src_input, interpreter_input) {
   // create stack of stackframes
   stack = new Array(600)
   // snap copy of the input and interpreter
-  inbuf = require('./input1')
-  ic = require('./inputcode1.js')
+  inbuf = src_input
+  ic = interpreter_input
   // clear the output
   outbuf = ''
   // default initial output to command field (override with LB)
@@ -482,8 +482,8 @@ function InitIO () {
 }
 
 // init the I/O start interpreter
-function StartIntCompile() {
-  InitIO()
+function StartIntCompile(src_input, interpreter_input) {
+  InitIO(src_input, interpreter_input)
   pc = 0
   Interpret()
   return outbuf
