@@ -1,0 +1,1674 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                      "http://www.w3.org/TR/html4/loose.dtd">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<TITLE>Meta Semantics</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000">
+<SCRIPT LANGUAGE="JavaScript" type="text/javascript">
+
+// three example semantic models are presented here
+// 1. an interpreter of assembly-like language derived from Meta II
+// 2. native javascript code - eval and execute
+// 3. a fully contained javascript object - no aux runtime, eval and execute
+
+/* begin interpreter support */
+
+// interpret original MetaII order code
+// 2015-08-19 (JMN) changed InterpretOp and argsymbol to accept lower case
+// 2008-08-18 (JMN) create out function for margin handling
+// 2007-06-10 (JMN) changed compare code to out, allowed EOF whitespace
+// 2006-10-25 (JMN) eliminated per character output
+// 2006-09-27 (JMN) addition of code for tokens
+// 2006-07-31 (JMN) addition of code and output comparison
+// 2006-07-29 (JMN) addition of runext minor extension order codes
+// 2006-07-13 (JMN) minor changes for IE and Mozilla compatability
+// 2006-07-12 (JMN) new javascript from pre 1990 JMN pascal code 
+
+// interpreter information
+// program counter into the interpreter text 
+var pc ;
+// interpreter text
+var ic ;
+
+// input information
+// input pointer into the input text 
+var inp;
+// input text
+var inbuf ;
+// output information
+// output text
+var outbuf ;
+// output left margin
+var margin ;
+
+// stack information
+// stack frame size (0=gn1, 1=gn2, 2=pc, 3=rule, 4=lm)
+var stackframesize = 5 ;
+// stack frame pointer into stack array
+var stackframe ;
+// stack of stackframes
+// stack = new array(600) ;
+
+// runtime variables
+// interpreter exit flag
+var exitlevel ;
+// parser control flag
+var flag ;   
+// argument for order codes with symbol arguments 
+var symbolarg ;
+// argument for order codes with string arguments
+var stringarg ;
+// next numeric label to use
+var gnlabel ;
+// token string from parse
+var token ;
+// output string from code ejection
+var outstr ;
+
+// extension variables
+// collecting token characters
+var tokenflag ; 
+
+function spaces ()
+// delete initial whitespace (space, newline, return, tab)
+{
+  while ((inbuf.charAt(inp) == ' ')  || (inbuf.charAt(inp) == '\n') || 
+         (inbuf.charAt(inp) == '\r') || (inbuf.charAt(inp) == '\t') ) inp++ ;
+} ;
+
+function findlabel(s) {
+var found ;
+
+// fast goto
+  pc = ic.indexOf('\n'+s+'\n') ;
+  found = (pc >= 0) ;
+  if (!found) pc = ic.indexOf('\n'+s+'\r') ;
+  found = (pc >= 0) ;
+  if (found) pc = pc + s.length + 1 ;
+  // notify on unresolved label and stop interpret
+  if (! found) { window.alert('label '+s+' not found!\n'); exitlevel = true; } ;
+} ;
+
+
+function runTST(s) {
+var i ;
+
+  // delete whitespace 
+  spaces() ;
+  // test string case insensitive 
+  flag = true ; i = 0 ;
+  while (flag && (i < s.length) )
+    { flag = (s.charAt(i).toUpperCase() == inbuf.charAt(inp+i).toUpperCase()) ; i++ ; } ;
+  // advance input if found 
+  if (flag) inp = inp + s.length ;
+} ;
+
+function runID ()
+{
+  // delete whitespace 
+  spaces() ;
+  // accept upper alpha or lower alpha
+  flag = ( ((inbuf.charAt(inp) >= 'A') && (inbuf.charAt(inp) <= 'Z')) ||
+           ((inbuf.charAt(inp) >= 'a') && (inbuf.charAt(inp) <= 'z')) ) ;
+  if (flag) {
+    token = '' ;
+    while (flag)
+      {
+        // add to token 
+        token = token + inbuf.charAt(inp) ;
+        inp++ ;
+        // accept upper alpha or lower alpha or numeral 
+        flag = ( ((inbuf.charAt(inp) >= 'A') && (inbuf.charAt(inp) <= 'Z')) ||
+                 ((inbuf.charAt(inp) >= 'a') && (inbuf.charAt(inp) <= 'z')) ||
+                 ((inbuf.charAt(inp) >= '0') && (inbuf.charAt(inp) <= '9')) ) ;
+      } ;
+    flag = true ;
+  } ;
+} ;
+
+function runNUM ()
+{
+  // delete whitespace 
+  spaces() ;
+  // accept a numeral 
+  flag = ((inbuf.charAt(inp) >= '0') && (inbuf.charAt(inp) <= '9')) ;
+  if (flag) {
+      token = '' ;
+      while (flag)
+        {
+          // add to token 
+          token = token + inbuf.charAt(inp) ;
+          inp++ ;
+          // accept numerals 
+          flag = ((inbuf.charAt(inp) >= '0') && (inbuf.charAt(inp) <= '9')) ;
+        } ;
+      flag = true ;
+    } ;
+} ;
+
+function runSR ()
+{
+  // delete whitespace 
+  spaces() ;
+  // accept a single quote 
+  flag = (inbuf.charAt(inp) == '\'') ;
+  if (flag) {
+      token = '' ;
+      while (flag)
+        {
+          // add to token 
+          token = token + inbuf.charAt(inp) ;
+          inp++ ;
+          // accept anything but a single quote 
+          flag = (inbuf.charAt(inp) != '\'') ;
+        } ;
+      // skip teminating single quote 
+      token = token + '\'' ;
+      inp++ ;
+      flag = true ;
+    } ;
+} ;
+
+function runADR ()
+{ 
+  gnlabel = 1 ;
+  inp = 0 ;
+  margin = 0 ;
+  stackframe = 0 ;
+  // initialize first stackframe 
+  stack[stackframe * stackframesize + 0] = 0 ;         // GN1  also GN (extended only)
+  stack[stackframe * stackframesize + 1] = 0 ;         // GN2
+  stack[stackframe * stackframesize + 2] = -1 ;        // return pc value
+  stack[stackframe * stackframesize + 3] = symbolarg ; // rule name called for error messages
+  stack[stackframe * stackframesize + 4] = margin ;    // left margin (extended only)
+  findlabel(symbolarg) ;
+} ;
+
+function runCLL ()
+{
+  // push and initialize a new stackframe
+  stackframe++ ;
+  stack[stackframe * stackframesize + 0] = 0 ;         // GN1  also GN (extended only)
+  stack[stackframe * stackframesize + 1] = 0 ;         // GN2
+  stack[stackframe * stackframesize + 2] = pc ;        // return pc value
+  stack[stackframe * stackframesize + 3] = symbolarg ; // rule name called for error messages
+  stack[stackframe * stackframesize + 4] = margin ;    // left margin (needed on backtrack)
+  findlabel(symbolarg) ;
+} ;
+
+function runEND ()
+{
+  exitlevel = true ;
+  if (!flag) window.alert('first rule "'+ stack[stackframe * stackframesize + 3] + '" failed') ;
+} ;
+
+function runR ()
+{ 
+  // interpretation completed on return on empty stack
+  if (stackframe == 0) {runEND() ; return ; };
+  // get return pc from stackframe and pop stack
+  pc = stack[stackframe * stackframesize + 2] ; // return pc
+  margin = stack[stackframe * stackframesize + 4] ;
+  stackframe-- ;                                // pop stackframe
+} ;
+
+function runSET ()
+{
+  flag = true ;
+} ;
+
+function runB ()
+{
+  findlabel(symbolarg) ;
+} ;
+
+function runBT ()
+{
+  if (flag) findlabel(symbolarg) ;
+} ;
+
+function runBF ()
+{
+  if (! flag) findlabel(symbolarg) ;
+} ;
+
+function runBE () {
+var i ; var j ; var h ;
+var msg ; var ctx ;
+  // only halt if there is an error
+  if (flag) return ;
+  // provide error context
+  msg = 'SYNTAX ERROR:\n' +
+        'rule:' + stack[stackframe * stackframesize + 3] + '\n' +
+        'last token:' + token + '\n' +
+        'out string:' + outstr + '\n' +
+        'INPUT:' + '\n' ; 
+  // provide scan context
+  i = inp - 20 ;  if (i < 0) i = 0 ;
+  j = inp + 20 ;  if (j > inbuf.length) j = inbuf.length ;
+  ctx = inbuf.substring(i,inp) + '<scan>' + inbuf.substring(inp,j) ;
+  msg += ctx + '\n\n' + 'CHAR CODES:\n' ;
+  // ensure all character codes are visible
+  for (var h = 0 ; h < ctx.length ; h++)
+    { if (ctx.charCodeAt(h) <= 32) 
+        { msg += '<' + ctx.charCodeAt(h) + '>' ; }
+      else
+        { msg += ctx.charAt(h) ; } ;
+    } ;
+  msg += '\n' ;
+  window.alert(msg) ;
+  exitlevel = true ;
+} ;
+
+function runCL (s)
+{
+  out(s) ;
+} ;
+
+function runCI ()
+{
+  out(token) ;
+} ;
+
+function runGN1 ()
+{
+  if (stack[stackframe * stackframesize + 0] == 0) 
+    {
+      stack[stackframe * stackframesize + 0] = gnlabel ;
+      gnlabel++ ;
+    } ;
+  out('L' + stack[stackframe * stackframesize + 0]) ;
+} ;
+
+function runGN2 ()
+{
+  if (stack[stackframe * stackframesize + 1] == 0) 
+    {
+      stack[stackframe * stackframesize + 1] = gnlabel ;
+      gnlabel++ ;
+    } ;
+  out('B' + stack[stackframe * stackframesize + 1]) ;
+} ;
+
+function runLB ()
+{
+  outstr = '' ;
+} ;
+
+function runOUT ()
+{
+  outbuf += outstr + '\n' ;
+  outstr = '\t' ;
+} ;
+
+// extended runtime order codes not in original Meta II paper
+
+// out - if necessary move to margin before output of s
+function out(s)
+{
+var col ;
+  if ((margin > 0) && (outstr.length == 0)) {
+    // advance to left margin
+    col = 0 ;
+    while (col < margin) { outstr = outstr + ' '; col++ ; }; } ;
+  // output given string
+  outstr += s ;
+} ;
+
+// extensions to provide label and nested output definition
+
+// NL - generate newline (extended only, compare with runOUT)
+function runextNL ()
+{
+  // output current line
+  outbuf += outstr + '\n' ;
+  outstr = '' ;
+} ;
+
+// TB - add a tab to the output
+function runextTB ()
+{ 
+  out('\t') ;
+} ;
+
+// GN - generate unique number (extended only, compare with runGN1)
+function runextGN ()
+{
+  if (stack[stackframe * stackframesize + 0] == 0) 
+    {
+      stack[stackframe * stackframesize + 0] = gnlabel ;
+      gnlabel++ ;
+    } ;
+  out(stack[stackframe * stackframesize + 0]) ;
+} ;
+
+// LMI - increase left margin (extended only)
+function runextLMI ()
+{
+  margin += 2 ;
+} ;
+
+// LMD - decrease left margin (extended only)
+function runextLMD ()
+{
+  margin -= 2 ;
+} ;
+
+// extensions to provide token definition
+        
+// CE  - compare input char to code for equal
+function runextCE (s)
+{
+  flag = (inbuf.charCodeAt(inp) == s) ;
+} ;
+
+// CGE - compare input char to code for greater or equal
+function runextCGE (s)
+{
+  flag = (inbuf.charCodeAt(inp) >= s) ;
+} ;
+
+// CLE - compare input char to code for less or equal
+function runextCLE (s)
+{
+  flag = (inbuf.charCodeAt(inp) <= s) ;
+} ;
+
+// LCH - literal char code to token buffer (extended only)
+function runextLCH ()
+{
+  token = inbuf.charCodeAt(inp) ;
+  // scan the character
+  inp++;
+} ;
+
+// NOT - invert parse flag
+function runextNOT ()
+{
+  flag = !flag ;
+} ;
+
+// TFT - set token flag true and clear token
+function runextTFT ()
+{
+  tokenflag = true ;
+  token = '' ;
+} ;
+
+// TFF - set token flag false
+function runextTFF ()
+{
+  tokenflag = false ;
+} ;
+
+// SCN - if flag, scan input character; if token flag, add to token (extended only)
+function runextSCN ()
+{ if (flag) {
+    // if taking token, add to token 
+    if (tokenflag) token = token + inbuf.charAt(inp) ;
+    // scan the character 
+    inp++ ;
+  } ;
+} ;
+
+// CC - copy char code to output
+function runextCC (s)
+{
+  outstr = outstr + String.fromCharCode(s);
+} ;
+
+function argstring ()
+{
+  stringarg = '' ;
+  // find the beginning of the string 
+  while (ic.charAt(pc) != '\'') pc++ ;
+  // concat string together 
+  pc++ ;
+  while (ic.charAt(pc) != '\'')
+    {
+      stringarg = stringarg + ic.charAt(pc) ;
+      pc++ ;
+    } ;
+  // skip terminating single quote 
+  pc++ ;
+} ;
+
+function argsymbol ()
+{
+  // reset symbol 
+  symbolarg = '' ;
+  // skip over the operator (not tab and not blank)
+  while ((ic.charAt(pc) != ' ') && (ic.charAt(pc) != '\t')) pc++ ;
+  // skip over tabs or blanks 
+  while ((ic.charAt(pc) == ' ') || (ic.charAt(pc) == '\t')) pc++ ;
+  // accrete symbol of alpha and numeral
+  while ( ((ic.charAt(pc) >= 'A') && (ic.charAt(pc) <= 'Z')) ||
+          ((ic.charAt(pc) >= 'a') && (ic.charAt(pc) <= 'z')) ||
+          ((ic.charAt(pc) >= '0') && (ic.charAt(pc) <= '9')) )
+    { symbolarg = symbolarg + ic.charAt(pc) ; pc++ ; } ;
+} ;
+
+function InterpretOp () {
+var oc ;
+var op ;
+
+  // assumes pc on operator in line
+  oc = pc ; op = '' ;
+  // accrete operator of upper alpha and numeral
+  while ( (oc < ic.length) &&
+          (((ic.charAt(oc) >= 'A') && (ic.charAt(oc) <= 'Z')) ||
+           ((ic.charAt(pc) >= 'a') && (ic.charAt(pc) <= 'z')) ||
+           ((ic.charAt(oc) >= '0') && (ic.charAt(oc) <= '9'))) )
+    { op = op + ic.charAt(oc) ; oc++ ; } ;
+  // intrepreter op case branch
+  switch (op) {
+    // original META II order codes
+    case 'ADR': argsymbol() ; runADR() ; return ;          // ADR - specify starting rule
+    case 'B':   argsymbol() ; runB() ; return ;            // B   - unconditional branch to label
+    case 'BT':  argsymbol() ; runBT() ; return ;           // BT  - branch if switch true to label
+    case 'BF':  argsymbol() ; runBF() ; return ;           // BF  - branch if switch false to label
+    case 'BE':  runBE() ; return ;                         // BE  - branch if switch false to error halt
+    case 'CLL': argsymbol() ; runCLL() ; return ;          // CLL - call rule at label
+    case 'CL':  argstring() ; runCL(stringarg) ; return ;  // CL  - copy given string argument to output
+    case 'CI':  runCI() ; return ;                         // CI  - copy scanned token to output
+    case 'END': runEND() ; return ;                        // END - pseudo op, end of source
+    case 'GN1': runGN1() ; return ;                        // GN1 - make and output label 1
+    case 'GN2': runGN2() ; return ;                        // GN2 - make and output label 2
+    case 'ID':  runID() ; return ;                         // ID  - recognize identifier token
+    case 'LB':  runLB() ; return ;                         // LB  - start output in label field
+    case 'NUM': runNUM() ; return ;                        // NUM - recognize number token 
+    case 'OUT': runOUT() ; return ;                        // OUT - output out buffer with new line
+    case 'R':   runR() ; return ;                          // R   - return from rule call with CLL
+    case 'SET': runSET() ; return ;                        // SET - set switch true
+    case 'SR':  runSR() ; return ;                         // SR  - recognize string token including single quotes
+    case 'TST': argstring() ; runTST(stringarg) ; return ; // TST - test for given string argument, if found set switch
+    // extensions to provide label and nested output definition
+    case 'GN':  runextGN() ; return ;                      // GN  - make and output unique number
+    case 'LMI': runextLMI() ; return ;                     // LMI - left margin increase
+    case 'LMD': runextLMD() ; return ;                     // LMD - left margin decrease
+    case 'NL':  runextNL() ; return ;                      // NL  - new line output
+    case 'TB':  runextTB() ; return ;                      // TB  - output a tab
+    // extensions to provide token definition
+    case 'CE':  argsymbol() ; runextCE(symbolarg) ; return ;        // CE  - compare input char to code for equal
+    case 'CGE': argsymbol() ; runextCGE(symbolarg) ; return ;       // CGE - compare input char to code for greater or equal
+    case 'CLE': argsymbol() ; runextCLE(symbolarg) ; return ;       // CLE - compare input char to code for less or equal
+    case 'LCH': runextLCH() ; return ;                     // LCH - literal character code to token as string
+    case 'NOT': runextNOT() ; return ;                     // NOT - complement flag
+    case 'RF':  if (!flag) runR() ; return ;               // RF  - return if switch false
+    case 'SCN': runextSCN() ; return ;                     // SCN - if flag, scan input character; if token flag, add to token
+    case 'TFF': runextTFF() ; return ;                     // TFF - token flag set to false
+    case 'TFT': runextTFT() ; return ;                     // TFT - token flag set to true
+    // extensions for backtracking, error handling, and char code output
+    case 'PFF': flag = false ; return ;                    // PFF - parse flag set to false
+    case 'PFT': flag = true ; return ;                     // PFT - parse flag set to true (AKA SET)
+    case 'CC':  argsymbol() ; runextCC(symbolarg) ; return ;        // CC - copy char code to output
+    default:
+        window.alert('ERROR: unknown interpret op \''+op+'\'') ;
+        exitlevel = true ;
+  } ;
+} ;
+
+function Interpret ()
+{ 
+  exitlevel = false ;
+  while (true) {
+    // skip to the next operator which is prefaced by a '\t' 
+    while (ic.charAt(pc) != '\t') pc++ ;
+    pc++ ;
+    InterpretOp() ;
+    if (exitlevel) return ;
+  } ;
+} ;
+
+function InitIO ()
+{ 
+  // create stack of stackframes
+  stack = new Array(600) ;
+  // snap copy of the input and interpreter 
+  inbuf = parent.frames[1].document.InputForm.InputText.value ;
+  ic = parent.frames[2].document.CodeForm.CodeText.value ;
+  // clear the output
+  parent.frames[3].document.OutputForm.OutputText.value = '' ;
+  outbuf = '' ;
+  // default initial output to command field (override with LB)
+  outstr = '\t' ;
+} ;
+
+// init the I/O start interpreter
+function StartIntCompile()
+{
+  InitIO() ;
+  pc = 0 ;
+  Interpret() ;
+  // fill in output on both success and failure
+  parent.frames[3].document.OutputForm.OutputText.value = outbuf ;
+  window.confirm('Done.');
+} ;
+
+/* end interpreter support */
+
+/* begin javascript function based compiler support */
+
+// javascript function based metacompiler harness code
+// 2006-10-25 (JMN) simple function based example
+
+function StartJsFnCompile()
+{
+  // assumes "compiler" defined in CodeText is a js function
+  // create the compiler from the js code in code textbox
+  eval(parent.frames[2].document.CodeForm.CodeText.value) ;
+  // clear the output textbox
+  parent.frames[3].document.OutputForm.OutputText.value = '' ;
+  // run the compiler on the input textbox
+  compiler(parent.frames[1].document.InputForm.InputText.value) ;
+  // set the output even if there is an error
+  parent.frames[3].document.OutputForm.OutputText.value = outbuf ;
+  window.confirm('Done.');
+} ;
+
+// similar to runBE except rule name is passed and final throw
+function runBEjsfn (rname) {
+var i ; var j ; var h ;
+var msg ; var ctx ;
+  // only halt if there is an error
+  if (flag) return ;
+  // provide error context
+  msg = 'SYNTAX ERROR:\n' +
+        'rule:' + rname + '\n' +
+        'last token:' + token + '\n' +
+        'out string:' + outstr + '\n' +
+        'INPUT:' + '\n' ;
+  // provide scan context
+  i = inp - 20 ;  if (i < 0) i = 0 ;
+  j = inp + 20 ;  if (j > inbuf.length) j = inbuf.length ;
+  ctx = inbuf.substring(i,inp) + '<scan>' + inbuf.substring(inp,j) ;
+  msg += ctx + '\n\n' + 'CHAR CODES:\n' ;
+  // ensure all character codes are visible
+  for (var h = 0 ; h < ctx.length ; h++)
+    { if (ctx.charCodeAt(h) <= 32) 
+        { msg += '<' + ctx.charCodeAt(h) + '>' ; }
+      else
+        { msg += ctx.charAt(h) ; } ;
+    } ;
+  msg += '\n' ;
+  // set the output even if there is an error
+  parent.frames[3].document.OutputForm.OutputText.value = outbuf ;
+  window.alert(msg) ;
+  throw "syntax error" ; ;
+} ;
+
+/* end javascript function based compiler support */
+
+/* begin javascript object based compiler support */
+
+// javascript object based metacompiler harness code
+// 2006-10-12 (JMN) simplified compile result
+// 2006-10-10 (JMN) new and as simple as possible
+
+function StartJsObjCompile()
+{
+  // assumes "compiler" defined in CodeText is a js object
+  // create the compiler from the js code in code textbox
+  eval(parent.frames[2].document.CodeForm.CodeText.value) ;
+  // clear the output textbox
+  parent.frames[3].document.OutputForm.OutputText.value = '' ;
+  // run the compiler on the input textbox
+  compiler.compile(parent.frames[1].document.InputForm.InputText.value) ;
+  // set the output even if there is an error
+  parent.frames[3].document.OutputForm.OutputText.value = compiler.outbuf ;
+  // if there was a compiler error, then report it
+  if (compiler.eflag > 0) window.alert(JsObjCompileErrorReport(compiler)) ;
+  window.confirm('Done.');
+} ;
+
+function JsObjCompileErrorReport (compiler) {
+var i ; var j ; var h ; var ctx ; var error;
+  // compilation error, provide error context
+  error = 'ERROR:\n' +
+          'RULE:' + compiler.erule + '\n' +
+          'TOKEN:' + compiler.token + '\n' ;
+  // provide input scan context
+  i = compiler.einput - 20 ;  if (i < 0) i = 0 ;
+  j = compiler.einput + 20 ;  if (j > compiler.inbuf.length) j = compiler.inbuf.length ;
+  ctx = compiler.inbuf.substring(i,compiler.einput) + '<scan>' + compiler.inbuf.substring(compiler.einput,j) ;
+  error += 'INPUT TEXT:\n' + ctx + '\n' +
+           'INPUT CHAR CODES:\n' + CharCodeString(ctx) + '\n' ;
+  // provide output context
+  i = compiler.outbuf.length - 30 ;  if (i < 0) i = 0 ;
+  j = compiler.outbuf.length ;
+  ctx = compiler.outbuf.substring(i,j) ;
+  error += 'OUTPUT TEXT:\n' + ctx + '\n' +
+           'OUTPUT CHAR CODES:\n' + CharCodeString(ctx) + '\n' ;
+  return error ;
+} ;
+
+/* end javascript based compiler support */
+
+/* begin embedded syntax extractor */
+
+function StartExtractSyntax() {
+  // clear the output textbox
+  parent.frames[3].document.OutputForm.OutputText.value = '' ;
+  // run the compiler on the input textbox
+  syntax_extract.compile(parent.frames[1].document.InputForm.InputText.value) ;
+  // set the output even if there is an error
+  parent.frames[3].document.OutputForm.OutputText.value = syntax_extract.outbuf ;
+  // if there was a compiler error, then report it
+  if (syntax_extract.eflag > 0) window.alert(JsObjCompileErrorReport(syntax_extract)) ;
+} ;
+
+// embedded compiler as javascript object for extracting
+// just syntax elements from an input description
+
+// SYNTAX compiler
+syntax_extract = {
+  
+  compile: function (input) {
+    // initialize compiler variables
+    this.inbuf = input ;
+    this.initialize() ;
+    // call the first rule
+    this.ctxpush('SYNTAX') ;
+    this.ruleSYNTAX() ;
+    this.ctxpop() ;
+    // special case handling of first rule failure
+    if ((!this.eflag) && (!this.pflag)) {
+      this.eflag = true ;
+      this.erule = 'SYNTAX' ;
+      this.einput = this.inp ; } ;
+    return this.eflag ;
+    },
+  
+  // strip compiler definition to syntax equations in standard form 
+  // accepts Meta II and modified syntax 
+  // James M. Neighbors 
+  // body of compiler definition 
+  ruleSYNTAX: function () {
+    this.test('.SYNTAX');
+    if (this.pflag) {
+      this.ctxpush('ID') ;
+      this.ruleID() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (!this.pflag) this.err();
+      this.outbuf += '.SYNTAX ' ;
+      this.outbuf += this.token ;
+      this.eol() ;
+      this.eol() ;
+      this.pflag = true ;
+      while (this.pflag) {
+        this.ctxpush('PR') ;
+        this.rulePR() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (this.pflag) {
+          } ;
+        if (!this.pflag) {
+          this.ctxpush('COMMENT') ;
+          this.ruleCOMMENT() ;
+          this.ctxpop() ;
+          if (this.eflag) return ;
+          if (this.pflag) {
+            } ;
+          } ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) this.err();
+      this.test('.TOKENS');
+      if (this.pflag) {
+        this.outbuf += '.TOKENS' ;
+        this.eol() ;
+        this.eol() ;
+        this.pflag = true ;
+        while (this.pflag) {
+          this.ctxpush('TR') ;
+          this.ruleTR() ;
+          this.ctxpop() ;
+          if (this.eflag) return ;
+          if (this.pflag) {
+            } ;
+          if (!this.pflag) {
+            this.ctxpush('COMMENT') ;
+            this.ruleCOMMENT() ;
+            this.ctxpop() ;
+            if (this.eflag) return ;
+            if (this.pflag) {
+              } ;
+            } ;
+          };
+        this.pflag = true ;
+        if (!this.pflag) this.err();
+        this.eol() ;
+        } ;
+      if (!this.pflag) {
+        this.pflag = true ;
+        if (this.pflag) {
+          } ;
+        } ;
+      if (!this.pflag) this.err();
+      this.test('.END');
+      if (!this.pflag) this.err();
+      this.outbuf += '.END' ;
+      this.eol() ;
+      } ;
+    } ,
+  
+  // parsing rule definition 
+  rulePR: function () {
+    this.ctxpush('ID') ;
+    this.ruleID() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.test('=');
+      if (!this.pflag) this.err();
+      this.outbuf += this.token ;
+      this.outbuf += ' = ' ;
+      this.stack[this.stackframe + 2] += 2 ;
+      this.ctxpush('EX1') ;
+      this.ruleEX1() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (!this.pflag) this.err();
+      this.test(';');
+      if (this.pflag) {
+        } ;
+      if (!this.pflag) {
+        this.test('.,');
+        if (this.pflag) {
+          } ;
+        } ;
+      if (!this.pflag) this.err();
+      this.stack[this.stackframe + 2] -= 2 ;
+      this.outbuf += ';' ;
+      this.eol() ;
+      this.eol() ;
+      } ;
+    } ,
+  
+  // token rule definition 
+  ruleTR: function () {
+    this.ctxpush('ID') ;
+    this.ruleID() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.test(':');
+      if (!this.pflag) this.err();
+      this.outbuf += this.token ;
+      this.outbuf += ' : ' ;
+      this.stack[this.stackframe + 2] += 2 ;
+      this.ctxpush('TX1') ;
+      this.ruleTX1() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (!this.pflag) this.err();
+      this.test(';');
+      if (!this.pflag) this.err();
+      this.stack[this.stackframe + 2] -= 2 ;
+      this.outbuf += ';' ;
+      this.eol() ;
+      } ;
+    } ,
+  
+  // comment definition 
+  ruleCOMMENT: function () {
+    this.test('[');
+    if (this.pflag) {
+      this.ctxpush('CMLINE') ;
+      this.ruleCMLINE() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (!this.pflag) this.err();
+      this.test(']');
+      if (!this.pflag) this.err();
+      } ;
+    } ,
+  
+  // parsing expressions 
+  ruleEX1: function () {
+    this.ctxpush('EX2') ;
+    this.ruleEX2() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.pflag = true ;
+      while (this.pflag) {
+        this.test('/');
+        if (this.pflag) {
+          this.outbuf += '/ ' ;
+          this.ctxpush('EX2') ;
+          this.ruleEX2() ;
+          this.ctxpop() ;
+          if (this.eflag) return ;
+          if (!this.pflag) this.err();
+          } ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) this.err();
+      } ;
+    } ,
+  
+  ruleEX2: function () {
+    this.ctxpush('EX3') ;
+    this.ruleEX3() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.outbuf += ' ' ;
+      } ;
+    if (!this.pflag) {
+      this.ctxpush('OUTPUT') ;
+      this.ruleOUTPUT() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (this.pflag) {
+        } ;
+      } ;
+    if (this.pflag) {
+      this.pflag = true ;
+      while (this.pflag) {
+        this.ctxpush('EX3') ;
+        this.ruleEX3() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (this.pflag) {
+          this.outbuf += ' ' ;
+          } ;
+        if (!this.pflag) {
+          this.ctxpush('OUTPUT') ;
+          this.ruleOUTPUT() ;
+          this.ctxpop() ;
+          if (this.eflag) return ;
+          if (this.pflag) {
+            } ;
+          } ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) this.err();
+      } ;
+    } ,
+  
+  ruleEX3: function () {
+    this.ctxpush('ID') ;
+    this.ruleID() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.outbuf += this.token ;
+      } ;
+    if (!this.pflag) {
+      this.ctxpush('STRING') ;
+      this.ruleSTRING() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (this.pflag) {
+        this.outbuf += String.fromCharCode(39) ;
+        this.outbuf += this.token ;
+        this.outbuf += String.fromCharCode(39) ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('(');
+      if (this.pflag) {
+        this.stack[this.stackframe + 2] += 2 ;
+        this.outbuf += '( ' ;
+        this.ctxpush('EX1') ;
+        this.ruleEX1() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (!this.pflag) this.err();
+        this.test(')');
+        if (!this.pflag) this.err();
+        this.stack[this.stackframe + 2] -= 2 ;
+        this.outbuf += ')' ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.EMPTY');
+      if (this.pflag) {
+        this.outbuf += '.EMPTY' ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.LITCHR');
+      if (this.pflag) {
+        this.outbuf += '.LITCHR' ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('$');
+      if (this.pflag) {
+        this.outbuf += '$' ;
+        this.ctxpush('EX3') ;
+        this.ruleEX3() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (!this.pflag) this.err();
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.ID');
+      if (this.pflag) {
+        this.outbuf += '.ID' ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.NUMBER');
+      if (this.pflag) {
+        this.outbuf += '.NUMBER' ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.STRING');
+      if (this.pflag) {
+        this.outbuf += '.STRING' ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('[');
+      if (this.pflag) {
+        this.outbuf += '[ ' ;
+        this.ctxpush('EX1') ;
+        this.ruleEX1() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (!this.pflag) this.err();
+        this.pflag = true ;
+        while (this.pflag) {
+          this.test('|');
+          if (this.pflag) {
+            this.outbuf += '| ' ;
+            this.ctxpush('EX1') ;
+            this.ruleEX1() ;
+            this.ctxpop() ;
+            if (this.eflag) return ;
+            if (!this.pflag) this.err();
+            } ;
+          };
+        this.pflag = true ;
+        if (!this.pflag) this.err();
+        this.test(']');
+        if (!this.pflag) this.err();
+        this.outbuf += ']' ;
+        } ;
+      } ;
+    } ,
+  
+  // output expressions 
+  ruleOUTPUT: function () {
+    this.test('.OUT');
+    if (this.pflag) {
+      this.test('(');
+      if (!this.pflag) this.err();
+      this.pflag = true ;
+      while (this.pflag) {
+        this.ctxpush('OUT1') ;
+        this.ruleOUT1() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) this.err();
+      this.test(')');
+      if (!this.pflag) this.err();
+      } ;
+    if (!this.pflag) {
+      this.test('.LABEL');
+      if (this.pflag) {
+        this.ctxpush('OUT1') ;
+        this.ruleOUT1() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (!this.pflag) this.err();
+        } ;
+      } ;
+    } ,
+  
+  ruleOUT1: function () {
+    this.test('*1');
+    if (this.pflag) {
+      } ;
+    if (!this.pflag) {
+      this.test('*2');
+      if (this.pflag) {
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('*');
+      if (this.pflag) {
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.ctxpush('STRING') ;
+      this.ruleSTRING() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (this.pflag) {
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.ctxpush('NUMBER') ;
+      this.ruleNUMBER() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (this.pflag) {
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('#');
+      if (this.pflag) {
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.NL');
+      if (this.pflag) {
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.LB');
+      if (this.pflag) {
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.TB');
+      if (this.pflag) {
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.LM+');
+      if (this.pflag) {
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.LM-');
+      if (this.pflag) {
+        } ;
+      } ;
+    } ,
+  
+  // token expressions 
+  ruleTX1: function () {
+    this.ctxpush('TX2') ;
+    this.ruleTX2() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.pflag = true ;
+      while (this.pflag) {
+        this.test('/');
+        if (this.pflag) {
+          this.outbuf += '/ ' ;
+          this.ctxpush('TX2') ;
+          this.ruleTX2() ;
+          this.ctxpop() ;
+          if (this.eflag) return ;
+          if (!this.pflag) this.err();
+          } ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) this.err();
+      } ;
+    } ,
+  
+  ruleTX2: function () {
+    this.ctxpush('TX3') ;
+    this.ruleTX3() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.outbuf += ' ' ;
+      this.pflag = true ;
+      while (this.pflag) {
+        this.ctxpush('TX3') ;
+        this.ruleTX3() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (this.pflag) {
+          this.outbuf += ' ' ;
+          } ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) this.err();
+      } ;
+    } ,
+  
+  ruleTX3: function () {
+    this.test('.TOKEN');
+    if (this.pflag) {
+      this.outbuf += '.TOKEN' ;
+      } ;
+    if (!this.pflag) {
+      this.test('.DELTOK');
+      if (this.pflag) {
+        this.outbuf += '.DELTOK' ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('$');
+      if (this.pflag) {
+        this.outbuf += '$' ;
+        this.ctxpush('TX3') ;
+        this.ruleTX3() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (!this.pflag) this.err();
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.ANYBUT(');
+      if (this.pflag) {
+        this.outbuf += '.ANYBUT(' ;
+        this.ctxpush('CX1') ;
+        this.ruleCX1() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (!this.pflag) this.err();
+        this.test(')');
+        if (!this.pflag) this.err();
+        this.outbuf += ')' ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('.ANY(');
+      if (this.pflag) {
+        this.outbuf += '.ANY(' ;
+        this.ctxpush('CX1') ;
+        this.ruleCX1() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (!this.pflag) this.err();
+        this.test(')');
+        if (!this.pflag) this.err();
+        this.outbuf += ')' ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.ctxpush('ID') ;
+      this.ruleID() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (this.pflag) {
+        this.outbuf += this.token ;
+        } ;
+      } ;
+    if (!this.pflag) {
+      this.test('(');
+      if (this.pflag) {
+        this.outbuf += '(' ;
+        this.ctxpush('TX1') ;
+        this.ruleTX1() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (!this.pflag) this.err();
+        this.test(')');
+        if (!this.pflag) this.err();
+        this.outbuf += ')' ;
+        } ;
+      } ;
+    } ,
+  
+  // character expressions 
+  ruleCX1: function () {
+    this.ctxpush('CX2') ;
+    this.ruleCX2() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.pflag = true ;
+      while (this.pflag) {
+        this.test('!');
+        if (this.pflag) {
+          this.outbuf += '!' ;
+          this.ctxpush('CX2') ;
+          this.ruleCX2() ;
+          this.ctxpop() ;
+          if (this.eflag) return ;
+          if (!this.pflag) this.err();
+          } ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) this.err();
+      } ;
+    } ,
+  
+  ruleCX2: function () {
+    this.ctxpush('CX3') ;
+    this.ruleCX3() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.test(':');
+      if (this.pflag) {
+        this.outbuf += ':' ;
+        this.ctxpush('CX3') ;
+        this.ruleCX3() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (!this.pflag) this.err();
+        } ;
+      if (!this.pflag) {
+        this.pflag = true ;
+        if (this.pflag) {
+          } ;
+        } ;
+      if (!this.pflag) this.err();
+      } ;
+    } ,
+  
+  ruleCX3: function () {
+    this.ctxpush('NUMBER') ;
+    this.ruleNUMBER() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.outbuf += this.token ;
+      } ;
+    if (!this.pflag) {
+      this.ctxpush('SQUOTE') ;
+      this.ruleSQUOTE() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (this.pflag) {
+        this.token = this.inbuf.charCodeAt(this.inp) ; this.inp++ ;
+        if (!this.pflag) this.err();
+        this.outbuf += this.token ;
+        } ;
+      } ;
+    } ,
+  
+  // token definitions 
+  rulePREFIX: function () {
+    this.pflag = true ;
+    while (this.pflag) {
+      this.pflag = 
+        (this.inbuf.charCodeAt(this.inp) == 32)  ||
+        (this.inbuf.charCodeAt(this.inp) == 9)  ||
+        (this.inbuf.charCodeAt(this.inp) == 13)  ||
+        (this.inbuf.charCodeAt(this.inp) == 10)  ;
+      if (this.pflag) {
+        if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;
+        this.inp++ } ;
+      };
+    this.pflag = true ;
+    if (this.pflag) {
+      } ;
+    } ,
+  
+  ruleID: function () {
+    this.ctxpush('PREFIX') ;
+    this.rulePREFIX() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.tflag = true ; 
+      this.token = '' ;
+      this.pflag = true ;
+      if (!this.pflag) return;
+      this.ctxpush('ALPHA') ;
+      this.ruleALPHA() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (!this.pflag) return;
+      this.pflag = true ;
+      while (this.pflag) {
+        this.ctxpush('ALPHA') ;
+        this.ruleALPHA() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        if (this.pflag) {
+          } ;
+        if (!this.pflag) {
+          this.ctxpush('DIGIT') ;
+          this.ruleDIGIT() ;
+          this.ctxpop() ;
+          if (this.eflag) return ;
+          if (this.pflag) {
+            } ;
+          } ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) return;
+      this.tflag = false ;
+      this.pflag = true ;
+      if (!this.pflag) return;
+      } ;
+    } ,
+  
+  ruleNUMBER: function () {
+    this.ctxpush('PREFIX') ;
+    this.rulePREFIX() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.tflag = true ; 
+      this.token = '' ;
+      this.pflag = true ;
+      if (!this.pflag) return;
+      this.ctxpush('DIGIT') ;
+      this.ruleDIGIT() ;
+      this.ctxpop() ;
+      if (this.eflag) return ;
+      if (!this.pflag) return;
+      this.pflag = true ;
+      while (this.pflag) {
+        this.ctxpush('DIGIT') ;
+        this.ruleDIGIT() ;
+        this.ctxpop() ;
+        if (this.eflag) return ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) return;
+      this.tflag = false ;
+      this.pflag = true ;
+      if (!this.pflag) return;
+      } ;
+    } ,
+  
+  ruleSTRING: function () {
+    this.ctxpush('PREFIX') ;
+    this.rulePREFIX() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.pflag = 
+        (this.inbuf.charCodeAt(this.inp) == 39)  ;
+      if (this.pflag) {
+        if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;
+        this.inp++ } ;
+      if (!this.pflag) return;
+      this.tflag = true ; 
+      this.token = '' ;
+      this.pflag = true ;
+      if (!this.pflag) return;
+      this.pflag = true ;
+      while (this.pflag) {
+        this.pflag = 
+          (this.inbuf.charCodeAt(this.inp) == 13)  ||
+          (this.inbuf.charCodeAt(this.inp) == 10)  ||
+          (this.inbuf.charCodeAt(this.inp) == 39)  ;
+        this.pflag = !this.pflag ;
+        if (this.pflag) {
+          if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;
+          this.inp++ } ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) return;
+      this.tflag = false ;
+      this.pflag = true ;
+      if (!this.pflag) return;
+      this.pflag = 
+        (this.inbuf.charCodeAt(this.inp) == 39)  ;
+      if (this.pflag) {
+        if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;
+        this.inp++ } ;
+      if (!this.pflag) return;
+      } ;
+    } ,
+  
+  ruleALPHA: function () {
+    this.pflag = 
+      ((this.inbuf.charCodeAt(this.inp) >= 65) &&
+       (this.inbuf.charCodeAt(this.inp) <= 90)  ) ||
+      ((this.inbuf.charCodeAt(this.inp) >= 97) &&
+       (this.inbuf.charCodeAt(this.inp) <= 122)  ) ;
+    if (this.pflag) {
+      if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;
+      this.inp++ } ;
+    if (this.pflag) {
+      } ;
+    } ,
+  
+  ruleDIGIT: function () {
+    this.pflag = 
+      ((this.inbuf.charCodeAt(this.inp) >= 48) &&
+       (this.inbuf.charCodeAt(this.inp) <= 57)  ) ;
+    if (this.pflag) {
+      if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;
+      this.inp++ } ;
+    if (this.pflag) {
+      } ;
+    } ,
+  
+  ruleSQUOTE: function () {
+    this.ctxpush('PREFIX') ;
+    this.rulePREFIX() ;
+    this.ctxpop() ;
+    if (this.eflag) return ;
+    if (this.pflag) {
+      this.pflag = 
+        (this.inbuf.charCodeAt(this.inp) == 39)  ;
+      if (this.pflag) {
+        if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;
+        this.inp++ } ;
+      if (!this.pflag) return;
+      } ;
+    } ,
+  
+  ruleCMLINE: function () {
+    this.tflag = true ; 
+    this.token = '' ;
+    this.pflag = true ;
+    if (this.pflag) {
+      this.pflag = true ;
+      while (this.pflag) {
+        this.pflag = 
+          (this.inbuf.charCodeAt(this.inp) == 10)  ||
+          (this.inbuf.charCodeAt(this.inp) == 13)  ||
+          (this.inbuf.charCodeAt(this.inp) == 93)  ;
+        this.pflag = !this.pflag ;
+        if (this.pflag) {
+          if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;
+          this.inp++ } ;
+        };
+      this.pflag = true ;
+      if (!this.pflag) return;
+      this.tflag = false ;
+      this.pflag = true ;
+      if (!this.pflag) return;
+      } ;
+    } ,
+  
+  // runtime variables
+  pflag: false ,
+  tflag: false ,
+  eflag: false ,
+  inp: 0 ,
+  inbuf:  '' ,
+  outbuf:  '' ,
+  erule:  '' ,
+  einput: 0 ,
+  token: '' ,
+  labelcount: 0 ,
+  stackframesize: 3 ,
+  stackframe: 0 ,
+  stos: -1 ,
+  stack: [] ,
+  
+  initialize: function () {
+    // initialize for another compile
+    this.pflag = false ;
+    this.tflag = false ;
+    this.eflag = false ;
+    this.inp = 0 ;
+    this.outbuf = '' ;
+    this.erule = '' ;
+    this.einput = 0 ;
+    this.token = '' ;
+    this.labelcount = 1 ;
+    this.stackframe = -1 ;
+    this.stos = -1 ;
+    this.stack = [] ;
+    },
+  
+  ctxpush: function (rulename){
+    // push and initialize a new stackframe
+    var LM ;
+    // new context inherits current context left margin
+    LM = 0; if (this.stackframe >= 0) LM = this.stack[this.stackframe + 2] ;
+    this.stos++ ;
+    this.stackframe = this.stos * this.stackframesize ;
+    // stackframe definition
+    this.stack[this.stackframe + 0] = 0 ;        // generated label
+    this.stack[this.stackframe + 1] = rulename ; // called rule name
+    this.stack[this.stackframe + 2] = LM ;       // left margin
+    },
+  
+  ctxpop: function (){
+    // pop and possibly deallocate old stackframe
+    this.stos-- ; // pop stackframe
+    this.stackframe = this.stos * this.stackframesize ;
+    },
+  
+  eol: function (){
+    // output end of line and seek left margin
+    var i ;
+    this.outbuf += '\n' ;
+    i = this.stack[this.stackframe + 2] ;
+    while (i>0) { this.outbuf += ' ' ; i-- } ;
+    },
+  
+  test: function (s) {
+    // test for a string in the input
+    var i ;
+    // delete whitespace
+    while ((this.inbuf.charAt(this.inp) == ' ')  ||
+           (this.inbuf.charAt(this.inp) == '\n') ||
+           (this.inbuf.charAt(this.inp) == '\r') ||
+           (this.inbuf.charAt(this.inp) == '\t') ) this.inp++ ;
+    // test string case insensitive
+    this.pflag = true ; i = 0 ;
+    while (this.pflag && (i < s.length) && ((this.inp+i) < this.inbuf.length) )
+    { this.pflag = (s.charAt(i).toUpperCase() ==
+                    this.inbuf.charAt(this.inp+i).toUpperCase()) ;
+      i++ ; } ;
+    this.pflag = this.pflag && (i == s.length) ;
+    // advance input if found
+    if (this.pflag) this.inp = this.inp + s.length ;
+    },
+  
+  err: function () {
+    // compilation error, provide error indication and context
+    this.eflag = true ;
+    this.erule = this.stack[this.stackframe + 1] ;
+    this.einput = this.inp ;
+    }
+  
+  }
+
+/* end embedded syntax extractor */
+
+/* begin webpage utility functions */
+
+function CharCodeString (s) {
+var ccs ; var h ;
+  // ensure nonprinting character codes are visible in error messages
+  ccs = '' ;
+  for (var h = 0 ; h < s.length ; h++)
+    { if (s.charCodeAt(h) <= 32)
+        { ccs += '<' + s.charCodeAt(h) + '>' ; }
+      else
+        { ccs += s.charAt(h) ; } ;
+    } ;
+  return ccs ;
+} ;
+
+// compare Output and Code (i.e., did metacompile work?)
+function StartCompare() {
+var i ; var j ; var k ;
+var lcode ;
+var lout ;
+var msg ; var ctx ;
+var flag ;
+  // get a copy of the code and out strings 
+  lcode = parent.frames[2].document.CodeForm.CodeText.value ;
+  lout = parent.frames[3].document.OutputForm.OutputText.value ;
+  // test string case sensitive
+  flag = true ; i = 0 ;
+  while (flag && (i < lcode.length) && (i < lout.length))
+    { flag = (lcode.charAt(i) == lout.charAt(i)) ; if (flag) i++ ; } ;
+  // browser differences, allow differences in whitespace at end
+  if (flag && (i < lcode.length) && (i == lout.length))
+    { j = i ;
+      while (flag && (j < lcode.length))
+        { flag = ((lcode.charAt(j) == ' ')  || (lcode.charAt(j) == '\n') ||
+                  (lcode.charAt(j) == '\r') || (lcode.charAt(j) == '\t') ) ;
+          j++ ; } ;
+    } ;
+  if (flag && (i == lcode.length) && (i < lout.length))
+    { j = i ;
+      while (flag && (j < lout.length))
+        { flag = ((lout.charAt(j) == ' ')  || (lout.charAt(j) == '\n') ||
+                  (lout.charAt(j) == '\r') || (lout.charAt(j) == '\t') ) ;
+          j++ ; } ;
+    } ;
+  // flag now determines same or different
+  if (flag) window.confirm('Same');
+  if (!flag) {
+    // i determines difference position
+    msg = 'Different\n' ;
+    // place an <EOT> marker to make the string ends visible
+    lcode = lcode + '<EOT>' ;
+    lout = lout + '<EOT>' ;
+    // provide difference context in output
+    j = i - 20 ;  if (j < 0) j = 0 ;
+    k = i + 20 ;  if (k > lout.length) k = lout.length ;
+    ctx = lout.substring(j,i) + '<scan>' + lout.substring(i,k) ;
+    msg += 'OUTPUT:\n' + ctx + '\n' + CharCodeString(ctx) + '\n\n' ;
+    // provide difference context in code
+    j = i - 20 ;  if (j < 0) j = 0 ;
+    k = i + 20 ;  if (k > lcode.length) k = lcode.length ;
+    ctx = lcode.substring(j,i) + '<scan>' + lcode.substring(i,k) ;
+    msg += 'CODE:\n' + ctx + '\n' + CharCodeString(ctx) + '\n' ;
+    window.alert(msg) ;
+  } ;
+};
+
+function StartCompile()
+{ // assume code beginning with a tab is interpreter
+  if (parent.frames[2].document.CodeForm.CodeText.value.charAt(0) == '\t')
+    { StartIntCompile() ; return } ;
+  // otherwise code is some form of native javascript defining "compiler"
+  compiler = null ;
+  // create the compiler from the js code in code textbox
+  eval(parent.frames[2].document.CodeForm.CodeText.value) ;
+  // determine form of compiler none, function collection, or single object
+  switch (typeof(compiler)) {
+    case 'function':  StartJsFnCompile(); return ;
+    case 'object'  :  StartJsObjCompile(); return ;
+    default:
+        window.alert('ERROR: code as javascript does not define compiler') ;
+  } ;
+};
+
+/* end webpage utility functions */
+
+</SCRIPT>
+<FORM NAME="CompileForm" action="none">
+<INPUT TYPE="button" NAME="CompileButton" VALUE="Compile"
+  onClick="StartCompile();">
+<INPUT TYPE="button" NAME="CompareButton" VALUE="Compare Code and Output" 
+  onClick="StartCompare();">
+<INPUT TYPE="button" NAME="SyntaxButton" VALUE="Extract Syntax to Output" 
+  onClick="StartExtractSyntax();">
+</FORM>
+<H6>
+Copyright &#169; 2006, 2008, 2015 Bayfront Technologies, Inc.
+<BR>
+http://www.BayfrontTechnologies.com/mc_workshop.html
+<BR>
+Permission to use, copy, modify, and distribute this software for any
+purpose with or without fee is hereby granted, provided that the above
+copyright notice, URL, and this permission notice appear in all copies.
+<BR>
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
+MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+</H6>
+</BODY>
+</HTML>

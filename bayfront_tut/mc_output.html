@@ -1,0 +1,34 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                      "http://www.w3.org/TR/html4/loose.dtd">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<TITLE>Meta Output text</TITLE></HEAD>
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000">
+<SCRIPT LANGUAGE="JavaScript" type="text/javascript">
+
+/* copy output to interpret */
+function CopyOutputToCode() {
+  // deselect current code choice
+  parent.frames[2].document.CodeForm.CodeSel.selectedIndex = -1 ;
+  parent.frames[2].document.CodeForm.CodeText.value =
+     document.OutputForm.OutputText.value ;
+} ;
+
+/* clear output */
+function ClearOutput() {
+  document.OutputForm.OutputText.value = "" ;
+} ;
+
+</SCRIPT>
+<FORM NAME="OutputForm" action="none">
+<B>Output:</B>                                                       
+<INPUT TYPE="button" NAME="CopyOutputToCodeButton" VALUE="Copy to Code"
+  onClick="CopyOutputToCode();">
+<INPUT TYPE="button" NAME="OutputClearButton" VALUE="Clear"
+  onClick="ClearOutput();">
+<TEXTAREA NAME="OutputText" COLS=80 ROWS=2000>
+On compile output appears here.
+</TEXTAREA>
+</FORM>
+</BODY>
+</HTML>

@@ -1,0 +1,1875 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
+                      "http://www.w3.org/TR/html4/loose.dtd">
+<HEAD>
+<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=iso-8859-1">
+<TITLE>Meta Input text select</TITLE>
+</HEAD>
+<BODY BGCOLOR="#FFFFFF" TEXT="#000000">
+<SCRIPT LANGUAGE="JavaScript" type="text/javascript">
+
+var Input_text;
+var Input_menu;
+var Input_count;
+
+Input_count = 0;
+Input_text = new Array(50);
+Input_menu = new Array(50);
+
+Input_menu[Input_count] = "Input clear" ;
+Input_text[Input_count] = "" ;
+
+Input_count++ ;
+Input_menu[Input_count] = "i01. demo, AEXP example assignments" ;
+Input_text[Input_count] =
+"fern:=5+6;\n"+
+"ace:=fern*5;\n"+
+"waldo:=fern+alpha/-beta^gamma;\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i02. demo, AEXP example assignment compiler" ;
+Input_text[Input_count] =
+".SYNTAX AEXP\n"+
+"\n"+
+"AEXP = AS $AS .,\n"+
+"AS = .ID .OUT('address ' *) ':=' EX1 .OUT('store') ';' .,\n"+
+"EX1 = EX2 $('+' EX2 .OUT('add') /\n"+
+"            '-' EX2 .OUT('sub') ) .,\n"+
+"EX2 = EX3 $('*' EX3 .OUT('mpy') /\n"+
+"            '/' EX3 .OUT('div') ) .,\n"+
+"EX3 = EX4 $('^' EX3 .OUT('exp')) .,\n"+
+"EX4 = '+' EX5 / '-' EX5 .OUT('minus') / EX5 .,\n"+
+"EX5 = .ID  .OUT('load ' *) /\n"+
+"      .NUMBER .OUT('literal ' *) /\n"+
+"      '(' EX1 ')' .,\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i03. Meta II syntax (paper fig. 5)" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"OUT1 = '*1' .OUT('GN1') / '*2' .OUT('GN2') /\n"+
+"'*' .OUT('CI') / .STRING .OUT('CL '*).,\n"+
+"\n"+
+"OUTPUT = ('.OUT' '('\n"+
+"$OUT1 ')' / '.LABEL' .OUT('LB') OUT1) .OUT('OUT') .,\n"+
+"\n"+
+"EX3 = .ID .OUT('CLL '*) / .STRING\n"+
+".OUT('TST '*) / '.ID' .OUT('ID') /\n"+
+"'.NUMBER' .OUT('NUM') /\n"+
+"'.STRING' .OUT('SR') / '(' EX1 ')' /\n"+
+"'.EMPTY' .OUT('SET') /\n"+
+"'$' .LABEL *1 EX3\n"+
+".OUT('BT ' *1) .OUT('SET').,\n"+
+"\n"+
+"EX2 = (EX3 .OUT('BF ' *1) / OUTPUT)\n"+
+"$(EX3 .OUT('BE') / OUTPUT)\n"+
+".LABEL *1 .,\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT('BT ' *1) EX2 )\n"+
+".LABEL *1 .,\n"+
+"\n"+
+"ST = .ID .LABEL * '=' EX1\n"+
+"'.,' .OUT('R').,\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' .ID .OUT('ADR ' *)\n"+
+"$ ST '.END' .OUT('END').,\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i04. Meta II syntax (i03 reordered)" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' .ID .OUT('ADR ' *)\n"+
+"          $ ST\n"+
+"          '.END' .OUT('END') .,\n"+
+"\n"+
+"ST = .ID .LABEL * '=' EX1 '.,' .OUT('R') .,\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT('BT ' *1) EX2 )\n"+
+"      .LABEL *1 .,\n"+
+"\n"+
+"EX2 = (EX3 .OUT('BF ' *1) / OUTPUT)\n"+
+"      $(EX3 .OUT('BE') / OUTPUT)\n"+
+"      .LABEL *1 .,\n"+
+"\n"+
+"EX3 = .ID       .OUT('CLL '*) /\n"+
+"      .STRING   .OUT('TST '*) /\n"+
+"      '.ID'     .OUT('ID')    /\n"+
+"      '.NUMBER' .OUT('NUM')   /\n"+
+"      '.STRING' .OUT('SR')    /\n"+
+"      '(' EX1 ')'             /\n"+
+"      '.EMPTY'  .OUT('SET')   /\n"+
+"      '$' .LABEL *1 EX3 .OUT('BT ' *1) .OUT('SET') .,\n"+
+"\n"+
+"OUTPUT = ('.OUT' '('$OUT1 ')' /\n"+
+"          '.LABEL' .OUT('LB') OUT1)\n"+
+"         .OUT('OUT') .,\n"+
+"\n"+
+"OUT1 = '*1'    .OUT('GN1')  /\n"+
+"       '*2'    .OUT('GN2')  /\n"+
+"       '*'     .OUT('CI')   /\n"+
+"       .STRING .OUT('CL '*) .,\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i05. add semicolon line end" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' .ID .OUT('ADR ' *)\n"+
+"          $ ST\n"+
+"          '.END' .OUT('END') .,\n"+
+"\n"+
+"ST = .ID .LABEL * '=' EX1 ';' .OUT('R') .,\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT('BT ' *1) EX2 )\n"+
+"      .LABEL *1 .,\n"+
+"\n"+
+"EX2 = (EX3 .OUT('BF ' *1) / OUTPUT)\n"+
+"      $(EX3 .OUT('BE') / OUTPUT)\n"+
+"      .LABEL *1 .,\n"+
+"\n"+
+"EX3 = .ID       .OUT('CLL '*) /\n"+
+"      .STRING   .OUT('TST '*) /\n"+
+"      '.ID'     .OUT('ID')    /\n"+
+"      '.NUMBER' .OUT('NUM')   /\n"+
+"      '.STRING' .OUT('SR')    /\n"+
+"      '(' EX1 ')'             /\n"+
+"      '.EMPTY'  .OUT('SET')   /\n"+
+"      '$' .LABEL *1 EX3 .OUT('BT ' *1) .OUT('SET') .,\n"+
+"\n"+
+"OUTPUT = ('.OUT' '('$OUT1 ')' /\n"+
+"          '.LABEL' .OUT('LB') OUT1)\n"+
+"         .OUT('OUT') .,\n"+
+"\n"+
+"OUT1 = '*1'    .OUT('GN1')  /\n"+
+"       '*2'    .OUT('GN2')  /\n"+
+"       '*'     .OUT('CI')   /\n"+
+"       .STRING .OUT('CL '*) .,\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i06. use semicolon line end" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' .ID .OUT('ADR ' *)\n"+
+"          $ ST\n"+
+"          '.END' .OUT('END') ;\n"+
+"\n"+
+"ST = .ID .LABEL * '=' EX1 ';' .OUT('R') ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT('BT ' *1) EX2 )\n"+
+"      .LABEL *1 ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT('BF ' *1) / OUTPUT)\n"+
+"      $(EX3 .OUT('BE') / OUTPUT)\n"+
+"      .LABEL *1 ;\n"+
+"\n"+
+"EX3 = .ID       .OUT('CLL '*) /\n"+
+"      .STRING   .OUT('TST '*) /\n"+
+"      '.ID'     .OUT('ID')    /\n"+
+"      '.NUMBER' .OUT('NUM')   /\n"+
+"      '.STRING' .OUT('SR')    /\n"+
+"      '(' EX1 ')'             /\n"+
+"      '.EMPTY'  .OUT('SET')   /\n"+
+"      '$' .LABEL *1 EX3 .OUT('BT ' *1) .OUT('SET') ;\n"+
+"\n"+
+"OUTPUT = ('.OUT' '('$OUT1 ')' /\n"+
+"          '.LABEL' .OUT('LB') OUT1)\n"+
+"         .OUT('OUT') ;\n"+
+"\n"+
+"OUT1 = '*1'    .OUT('GN1')  /\n"+
+"       '*2'    .OUT('GN2')  /\n"+
+"       '*'     .OUT('CI')   /\n"+
+"       .STRING .OUT('CL '*) ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i07. add new output control" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' .ID .OUT('ADR ' *)\n"+
+"          $ ST\n"+
+"          '.END' .OUT('END') ;\n"+
+"\n"+
+"ST = .ID .LABEL * '=' EX1 ';' .OUT('R') ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT('BT ' *1) EX2 )\n"+
+"      .LABEL *1 ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT('BF ' *1) / OUTPUT)\n"+
+"      $(EX3 .OUT('BE') / OUTPUT)\n"+
+"      .LABEL *1 ;\n"+
+"\n"+
+"EX3 = .ID       .OUT('CLL '*) /\n"+
+"      .STRING   .OUT('TST '*) /\n"+
+"      '.ID'     .OUT('ID')    /\n"+
+"      '.NUMBER' .OUT('NUM')   /\n"+
+"      '.STRING' .OUT('SR')    /\n"+
+"      '(' EX1 ')'             /\n"+
+"      '.EMPTY'  .OUT('SET')   /\n"+
+"      '$' .LABEL *1 EX3 .OUT('BT ' *1) .OUT('SET') ;\n"+
+" \n"+
+"OUTPUT = ('.OUT' '('$OUT1 ')' / \n"+
+"          '.LABEL' .OUT('LB') OUT1) \n"+
+"         .OUT('OUT') ;\n"+
+"\n"+
+"OUT1 = '*1'    .OUT('GN1')  /\n"+
+"       '*2'    .OUT('GN2')  /\n"+
+"       '*'     .OUT('CI')   /\n"+
+"       .STRING .OUT('CL '*) /\n"+
+"       '#'     .OUT('GN')   /\n"+
+"       '.NL'   .OUT('NL')   /\n"+
+"       '.LB'   .OUT('LB')   /\n"+
+"       '.TB'   .OUT('TB')   /\n"+
+"       '.LM+'  .OUT('LMI')  /\n"+
+"       '.LM-'  .OUT('LMD')  ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i08. delete old output control" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' .ID .OUT('ADR ' *)\n"+
+"          $ ST \n"+
+"          '.END' .OUT('END') ;\n"+
+"\n"+
+"ST = .ID .LABEL * '=' EX1 ';' .OUT('R') ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT('BT ' *1) EX2 )\n"+
+"      .LABEL *1 ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT('BF ' *1) / OUTPUT)\n"+
+"      $(EX3 .OUT('BE') / OUTPUT)\n"+
+"      .LABEL *1 ;\n"+
+"\n"+
+"EX3 = .ID       .OUT('CLL '*) /\n"+
+"      .STRING   .OUT('TST '*) /\n"+
+"      '.ID'     .OUT('ID')    /\n"+
+"      '.NUMBER' .OUT('NUM')   /\n"+
+"      '.STRING' .OUT('SR')    /\n"+
+"      '(' EX1 ')'             /\n"+
+"      '.EMPTY'  .OUT('SET')   /\n"+
+"      '$' .LABEL *1 EX3 .OUT('BT ' *1) .OUT('SET') ;\n"+
+"\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'     .OUT('CI')   / \n"+
+"       .STRING .OUT('CL '*) /\n"+
+"       '#'     .OUT('GN')   /\n"+
+"       '.NL'   .OUT('NL')   /\n"+
+"       '.LB'   .OUT('LB')   /\n"+
+"       '.TB'   .OUT('TB')   /\n"+
+"       '.LM+'  .OUT('LMI')  /\n"+
+"       '.LM-'  .OUT('LMD')  ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i09. use new output control" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' .ID .OUT(.LB .TB 'ADR ' * .NL)\n"+
+"          $ ST\n"+
+"          '.END' .OUT(.TB 'END' .NL) ;\n"+
+"\n"+
+"ST = .ID .OUT(.LB * .NL) '=' EX1 ';' .OUT(.TB 'R' .NL) ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT(.TB 'BT L'# .NL) EX2 )\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT(.TB 'BF L'# .NL) / OUTPUT)\n"+
+"      $(EX3 .OUT(.TB 'BE' .NL) / OUTPUT)\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX3 = .ID       .OUT(.TB 'CLL '* .NL) /\n"+
+"      .STRING   .OUT(.TB 'TST '* .NL) /\n"+
+"      '.ID'     .OUT(.TB 'ID' .NL)    /\n"+
+"      '.NUMBER' .OUT(.TB 'NUM' .NL)   /\n"+
+"      '.STRING' .OUT(.TB 'SR' .NL)    /\n"+
+"      '(' EX1 ')'                     /\n"+
+"      '.EMPTY'  .OUT(.TB 'SET' .NL)   /\n"+
+"      '$' .OUT(.LB 'L'# .NL) EX3 .OUT(.TB 'BT L'# .NL) .OUT(.TB 'SET' .NL) ;\n"+
+"\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'     .OUT(.TB 'CI' .NL)   /\n"+
+"       .STRING .OUT(.TB 'CL '* .NL) /\n"+
+"       '#'     .OUT(.TB 'GN' .NL)   /\n"+
+"       '.NL'   .OUT(.TB 'NL' .NL)   /\n"+
+"       '.LB'   .OUT(.TB 'LB' .NL)   /\n"+
+"       '.TB'   .OUT(.TB 'TB' .NL)   /\n"+
+"       '.LM+'  .OUT(.TB 'LMI' .NL)  /\n"+
+"       '.LM-'  .OUT(.TB 'LMD' .NL)  ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i10. convert i09 to js functions" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' .ID\n"+
+"            .OUT(.LB '// '*' compiler' .NL)\n"+
+"            .OUT('function compiler (input) {' .LM+ .NL)\n"+
+"            .OUT('inbuf = input ;' .NL)\n"+
+"            .OUT('inp = 0 ;' .NL)\n"+
+"            .OUT('outbuf = \"\" ;' .NL)\n"+
+"            .OUT('margin = 0 ;' .NL)\n"+
+"            .OUT('gnlabel = 1 ;' .NL)\n"+
+"            .OUT('rule'*'() ;' .NL)\n"+
+"            .OUT('return outbuf ;' .NL)\n"+
+"            .OUT(.LM- '} ;' .NL .NL)\n"+
+"          $ ST\n"+
+"          '.END' ;\n"+
+"\n"+
+"ST = .ID .OUT(.LB 'function rule'*' () {' .LM+ .NL)\n"+
+"     .OUT('var rname = \"'*'\" ;' .NL)\n"+
+"     .OUT('var rlabel = 0 ;' .NL)\n"+
+"     '=' EX1 ';'\n"+
+"     .OUT(.LM- '} ;' .NL .NL) ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT('if (!flag) {' .LM+ .NL) EX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT('if (flag) {' .LM+ .NL) / OUTPUT .OUT('if (true) {' .LM+ .NL) )\n"+
+"      $(EX3 .OUT('if (!flag) runBEjsfn(rname);' .NL) / OUTPUT)\n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"EX3 = .ID       .OUT('rule'*'();' .NL) /\n"+
+"      .STRING   .OUT('runTST('*');' .NL) /\n"+
+"      '.ID'     .OUT('runID();' .NL)     /\n"+
+"      '.NUMBER' .OUT('runNUM();' .NL)    /\n"+
+"      '.STRING' .OUT('runSR();' .NL)     /\n"+
+"      '(' EX1 ')'                        /\n"+
+"      '.EMPTY'  .OUT('runSET();' .NL)    /\n"+
+"      '$' .OUT('runSET();' .NL)\n"+
+"          .OUT('while (flag) {' .LM+ .NL)\n"+
+"           EX3 \n"+
+"          .OUT('};' .LM- .NL) \n"+
+"          .OUT('runSET();' .NL) ;\n"+
+"\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'     .OUT('runCI();' .NL)    /\n"+
+"       .STRING .OUT('runCL('*');' .NL) /\n"+
+"       '#'     .OUT('if (rlabel == 0) { rlabel = gnlabel; gnlabel++ ; } ;' .NL)\n"+
+"               .OUT('runCL(rlabel.toString());' .NL) /\n"+
+"       '.NL'   .OUT('runextNL();' .NL)    /\n"+
+"       '.LB'   .OUT('runLB();' .NL)    /\n"+
+"       '.TB'   .OUT('runextTB();' .NL)    /\n"+
+"       '.LM+'  .OUT('runextLMI();' .NL)   /\n"+
+"       '.LM-'  .OUT('runextLMD();' .NL)   ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i11. add token rules to i09" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' .ID .OUT(.LB .TB 'ADR ' * .NL)\n"+
+"          $ PR  \n"+
+"          '.TOKENS'\n"+
+"          $ TR\n"+
+"          '.END' .OUT(.TB 'END' .NL) ;\n"+
+"\n"+
+"PR = .ID .OUT(.LB * .NL) '=' EX1 ';' .OUT(.TB 'R' .NL) ; \n"+
+"\n"+
+"TR = .ID .OUT(.LB * .NL) ':' TX1 ';' .OUT(.TB 'R' .NL) ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT(.TB 'BT L'# .NL) EX2 )\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT(.TB 'BF L'# .NL) / OUTPUT)\n"+
+"      $(EX3 .OUT(.TB 'BE' .NL) / OUTPUT)\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX3 = .ID       .OUT(.TB 'CLL '* .NL) /\n"+
+"      .STRING   .OUT(.TB 'TST '* .NL) /\n"+
+"      '.ID'     .OUT(.TB 'ID' .NL)    /\n"+
+"      '.NUMBER' .OUT(.TB 'NUM' .NL)   /\n"+
+"      '.STRING' .OUT(.TB 'SR' .NL)    /\n"+
+"      '(' EX1 ')'                     /\n"+
+"      '.EMPTY'  .OUT(.TB 'SET' .NL)   /\n"+
+"      '$' .OUT(.LB 'L'# .NL) EX3 .OUT(.TB 'BT L'# .NL) .OUT(.TB 'SET' .NL) ;\n"+
+"\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'     .OUT(.TB 'CI' .NL)   /\n"+
+"       .STRING .OUT(.TB 'CL '* .NL) /\n"+
+"       .NUMBER .OUT(.TB 'CC '* .NL) /\n"+
+"       '#'     .OUT(.TB 'GN' .NL)   /\n"+
+"       '.NL'   .OUT(.TB 'NL' .NL)   /\n"+
+"       '.LB'   .OUT(.TB 'LB' .NL)   /\n"+
+"       '.TB'   .OUT(.TB 'TB' .NL)   /\n"+
+"       '.LM+'  .OUT(.TB 'LMI' .NL)  /\n"+
+"       '.LM-'  .OUT(.TB 'LMD' .NL)  ;\n"+
+"\n"+
+"TX1 = TX2 $('/' .OUT(.TB 'BT T'# .NL) TX2) \n"+
+"      .OUT(.LB 'T'# .NL) ;\n"+
+"\n"+
+"TX2 = TX3 .OUT(.TB 'BF T'# .NL)\n"+
+"      $(TX3 .OUT(.TB 'RF' .NL) )\n"+
+"      .OUT(.LB 'T'# .NL) ;\n"+
+"\n"+
+"TX3 = ( '.TOKEN'         .OUT(.TB 'TFT' .NL) /\n"+
+"        '.DELTOK'        .OUT(.TB 'TFF' .NL) /\n"+
+"        '$' .OUT(.LB 'T'# .NL) TX3 .OUT(.TB 'BT T'# .NL) ) \n"+
+"                         .OUT(.TB 'SET' .NL)               /\n"+
+"      '.ANYBUT(' CX1 ')' .OUT(.TB 'NOT' .NL .TB 'SCN' .NL) /\n"+
+"      '.ANY(' CX1 ')'    .OUT(.TB 'SCN' .NL)               /\n"+
+"      .ID                .OUT(.TB 'CLL ' * .NL)            /\n"+
+"      '(' TX1 ')'                                          ;\n"+
+"            \n"+
+"CX1 = CX2 $('!' .OUT(.TB 'BT C'# .NL) CX2) .OUT(.LB 'C'# .NL) ;\n"+
+"CX2 = CX3 (':' .OUT(.TB 'CGE ' * .NL) .OUT(.TB 'BF D'# .NL) \n"+
+"               CX3\n"+
+"               .OUT(.TB 'CLE ' * .NL) .OUT(.LB 'D' # .NL) /\n"+
+"           .EMPTY .OUT(.TB 'CE ' * .NL)                   ) ;\n"+
+"CX3 = .NUMBER ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i11jf. add token rules to i10" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' .ID\n"+
+"            .OUT(.LB '// '*' compiler' .NL)\n"+
+"            .OUT('function compiler (input) {' .LM+ .NL)\n"+
+"            .OUT('inbuf = input ;' .NL)\n"+
+"            .OUT('inp = 0 ;' .NL)\n"+
+"            .OUT('outbuf = \"\" ;' .NL)\n"+
+"            .OUT('margin = 0 ;' .NL)\n"+
+"            .OUT('gnlabel = 1 ;' .NL)\n"+
+"            .OUT('runextTFF();' .NL)\n"+
+"            .OUT('rule'*'() ;' .NL)\n"+
+"            .OUT('return outbuf ;' .NL)\n"+
+"            .OUT(.LM- '} ;' .NL .NL)\n"+
+"          $ PR\n"+
+"          '.TOKENS'\n"+
+"          $ TR\n"+
+"          '.END' ;\n"+
+"\n"+
+"PR = .ID .OUT(.LB 'function rule'*' () {' .LM+ .NL)\n"+
+"     .OUT('var rname = \"'*'\" ;' .NL)\n"+
+"     .OUT('var rlabel = 0 ;' .NL)\n"+
+"     '=' EX1 ';'\n"+
+"     .OUT(.LM- '} ;' .NL .NL) ;\n"+
+"\n"+
+"TR = .ID .OUT(.LB 'function rule'*' () {' .LM+ .NL)\n"+
+"     .OUT('var rname = \"'*'\" ;' .NL)\n"+
+"     .OUT('var rlabel = 0 ;' .NL)\n"+
+"     ':' TX1 ';'\n"+
+"     .OUT(.LM- '} ;' .NL .NL) ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT('if (!flag) {' .LM+ .NL) EX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT('if (flag) {' .LM+ .NL) / OUTPUT .OUT('if (true) {' .LM+ .NL) )\n"+
+"      $(EX3 .OUT('if (!flag) runBEjsfn(rname);' .NL) / OUTPUT)\n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"EX3 = .ID       .OUT('rule'*'();' .NL) /\n"+
+"      .STRING   .OUT('runTST('*');' .NL) /\n"+
+"      '.ID'     .OUT('runID();' .NL)     /\n"+
+"      '.NUMBER' .OUT('runNUM();' .NL)    /\n"+
+"      '.STRING' .OUT('runSR();' .NL)     /\n"+
+"      '(' EX1 ')'                        /\n"+
+"      '.EMPTY'  .OUT('runSET();' .NL)    /\n"+
+"      '$' .OUT('runSET();' .NL)\n"+
+"          .OUT('while (flag) {' .LM+ .NL)\n"+
+"           EX3 \n"+
+"          .OUT('};' .LM- .NL) \n"+
+"          .OUT('runSET();' .NL) ;\n"+
+"\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'     .OUT('runCI();' .NL)    /\n"+
+"       .STRING .OUT('runCL('*');' .NL) /\n"+
+"       .NUMBER .OUT('runextCC('*');' .NL) /\n"+
+"       '#'     .OUT('if (rlabel == 0) { rlabel = gnlabel; gnlabel++ ; } ;' .NL)\n"+
+"               .OUT('runCL(rlabel.toString());' .NL) /\n"+
+"       '.NL'   .OUT('runextNL();' .NL)    /\n"+
+"       '.LB'   .OUT('runLB();' .NL)    /\n"+
+"       '.TB'   .OUT('runextTB();' .NL)    /\n"+
+"       '.LM+'  .OUT('runextLMI();' .NL)   /\n"+
+"       '.LM-'  .OUT('runextLMD();' .NL)   ;\n"+
+"\n"+
+"TX1 = TX2 $('/' .OUT('if (!flag) {' .LM+ .NL) TX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"TX2 = TX3 .OUT('if (flag) {' .LM+ .NL) \n"+
+"      $(TX3 .OUT('if (!flag) return;' .NL) ) \n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"TX3 = ( '.TOKEN'         .OUT('runextTFT();' .NL) /\n"+
+"        '.DELTOK'        .OUT('runextTFF();' .NL) /\n"+
+"        '$' .OUT('runSET();' .NL)\n"+
+"            .OUT('while (flag) {' .LM+ .NL)\n"+
+"             TX3 \n"+
+"            .OUT('};' .LM- .NL)                   )\n"+
+"        .OUT('runSET();' .NL)                       /\n"+
+"      '.ANYBUT(' CX1 ')' .OUT('runextNOT();' .NL)\n"+
+"                         .OUT('runextSCN();' .NL)   /\n"+
+"      '.ANY(' CX1 ')'    .OUT('runextSCN();' .NL)   /\n"+
+"      .ID                .OUT('rule'*'();' .NL)     /\n"+
+"      '(' TX1 ')'                                   ;\n"+
+"            \n"+
+"CX1 = CX2 $('!' .OUT('if (!flag) {' .LM+ .NL) CX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"CX2 = CX3 (':' .OUT('runextCGE('*');' .NL) .OUT('if (flag) {' .LM+ .NL) \n"+
+"               CX3\n"+
+"               .OUT('runextCLE('*');' .NL) .OUT(.LM- '} ;' .NL) /\n"+
+"           .EMPTY .OUT('runextCE('*');' .NL)                    ) ;\n"+
+"CX3 = .NUMBER ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i12. use token rules" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' ID .OUT(.LB .TB 'ADR ' * .NL)\n"+
+"          $ PR  \n"+
+"          '.TOKENS'\n"+
+"          $ TR\n"+
+"          '.END' .OUT(.TB 'END' .NL) ;\n"+
+"\n"+
+"PR = ID .OUT(.LB * .NL) '=' EX1 ';' .OUT(.TB 'R' .NL) ; \n"+
+"\n"+
+"TR = ID .OUT(.LB * .NL) ':' TX1 ';' .OUT(.TB 'R' .NL) ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT(.TB 'BT L'# .NL) EX2 )\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT(.TB 'BF L'# .NL) / OUTPUT)\n"+
+"      $(EX3 .OUT(.TB 'BE' .NL) / OUTPUT)\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX3 = ID        .OUT(.TB 'CLL '* .NL)        /\n"+
+"      STRING    .OUT(.TB 'TST ' 39 * 39 .NL) /\n"+
+"      '(' EX1 ')'                            /\n"+
+"      '.EMPTY'  .OUT(.TB 'SET' .NL)          /\n"+
+"      '.LITCHR' .OUT(.TB 'LCH' .NL)          /\n"+
+"      '$' .OUT(.LB 'L'# .NL) EX3 .OUT(.TB 'BT L'# .NL) .OUT(.TB 'SET' .NL) ;\n"+
+"\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'     .OUT(.TB 'CI' .NL)          /\n"+
+"       STRING  .OUT(.TB 'CL ' 39 * 39 .NL) /\n"+
+"       NUMBER  .OUT(.TB 'CC '* .NL)        /\n"+
+"       '#'     .OUT(.TB 'GN' .NL)          /\n"+
+"       '.NL'   .OUT(.TB 'NL' .NL)          /\n"+
+"       '.LB'   .OUT(.TB 'LB' .NL)          /\n"+
+"       '.TB'   .OUT(.TB 'TB' .NL)          /\n"+
+"       '.LM+'  .OUT(.TB 'LMI' .NL)         /\n"+
+"       '.LM-'  .OUT(.TB 'LMD' .NL)         ;\n"+
+"\n"+
+"TX1 = TX2 $('/' .OUT(.TB 'BT T'# .NL) TX2) \n"+
+"      .OUT(.LB 'T'# .NL) ;\n"+
+"\n"+
+"TX2 = TX3 .OUT(.TB 'BF T'# .NL)\n"+
+"      $(TX3 .OUT(.TB 'RF' .NL) )\n"+
+"      .OUT(.LB 'T'# .NL) ;\n"+
+"\n"+
+"TX3 = ( '.TOKEN'         .OUT(.TB 'TFT' .NL) /\n"+
+"        '.DELTOK'        .OUT(.TB 'TFF' .NL) /\n"+
+"        '$' .OUT(.LB 'T'# .NL) TX3 .OUT(.TB 'BT T'# .NL) ) \n"+
+"                         .OUT(.TB 'SET' .NL)               /\n"+
+"      '.ANYBUT(' CX1 ')' .OUT(.TB 'NOT' .NL .TB 'SCN' .NL) /\n"+
+"      '.ANY(' CX1 ')'    .OUT(.TB 'SCN' .NL)               /\n"+
+"      ID                 .OUT(.TB 'CLL ' * .NL)            /\n"+
+"      '(' TX1 ')'                                          ;\n"+
+"            \n"+
+"CX1 = CX2 $('!' .OUT(.TB 'BT C'# .NL) CX2) .OUT(.LB 'C'# .NL) ;\n"+
+"CX2 = CX3 (':' .OUT(.TB 'CGE ' * .NL) .OUT(.TB 'BF D'# .NL) \n"+
+"               CX3\n"+
+"               .OUT(.TB 'CLE ' * .NL) .OUT(.LB 'D' # .NL) /\n"+
+"           .EMPTY .OUT(.TB 'CE ' * .NL)                   ) ;\n"+
+"CX3 = NUMBER ;\n"+
+"\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN ALPHA $(ALPHA/DIGIT) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN DIGIT $DIGIT .DELTOK ;\n"+
+"STRING : PREFIX .ANY(39) .TOKEN $.ANYBUT(13!10!39) .DELTOK .ANY(39) ;\n"+
+"ALPHA  : .ANY(65:90!97:122) ;\n"+
+"DIGIT  : .ANY(48:57) ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i12jf. use token rules" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' ID\n"+
+"            .OUT(.LB '// '*' compiler' .NL)\n"+
+"            .OUT('function compiler (input) {' .LM+ .NL)\n"+
+"            .OUT('inbuf = input ;' .NL)\n"+
+"            .OUT('inp = 0 ;' .NL)\n"+
+"            .OUT('outbuf = \"\" ;' .NL)\n"+
+"            .OUT('margin = 0 ;' .NL)\n"+
+"            .OUT('gnlabel = 1 ;' .NL)\n"+
+"            .OUT('runextTFF();' .NL)\n"+
+"            .OUT('rule'*'() ;' .NL)\n"+
+"            .OUT('return outbuf ;' .NL)\n"+
+"            .OUT(.LM- '} ;' .NL .NL)\n"+
+"          $ PR\n"+
+"          '.TOKENS'\n"+
+"          $ TR\n"+
+"          '.END' ;\n"+
+"\n"+
+"PR = ID .OUT(.LB 'function rule'*' () {' .LM+ .NL)\n"+
+"     .OUT('var rname = \"'*'\" ;' .NL)\n"+
+"     .OUT('var rlabel = 0 ;' .NL)\n"+
+"     '=' EX1 ';'\n"+
+"     .OUT(.LM- '} ;' .NL .NL) ;\n"+
+"\n"+
+"TR = ID .OUT(.LB 'function rule'*' () {' .LM+ .NL)\n"+
+"     .OUT('var rname = \"'*'\" ;' .NL)\n"+
+"     .OUT('var rlabel = 0 ;' .NL)\n"+
+"     ':' TX1 ';'\n"+
+"     .OUT(.LM- '} ;' .NL .NL) ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT('if (!flag) {' .LM+ .NL) EX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT('if (flag) {' .LM+ .NL) / OUTPUT .OUT('if (true) {' .LM+ .NL) )\n"+
+"      $(EX3 .OUT('if (!flag) runBEjsfn(rname);' .NL) / OUTPUT)\n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"EX3 = ID        .OUT('rule'*'();' .NL)   /\n"+
+"      STRING    .OUT('runTST(' 39 * 39 ');' .NL) /\n"+
+"      '(' EX1 ')'                        /\n"+
+"      '.EMPTY'  .OUT('runSET();' .NL)    /\n"+
+"      '.LITCHR' .OUT('runextLCH();' .NL) /\n"+
+"      '$' .OUT('runSET();' .NL)\n"+
+"          .OUT('while (flag) {' .LM+ .NL)\n"+
+"           EX3 \n"+
+"          .OUT('};' .LM- .NL) \n"+
+"          .OUT('runSET();' .NL) ;\n"+
+"\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'    .OUT('runCI();' .NL)    /\n"+
+"       STRING .OUT('runCL(' 39 * 39 ');' .NL) /\n"+
+"       NUMBER .OUT('runextCC('*');' .NL) /\n"+
+"       '#'    .OUT('if (rlabel == 0) { rlabel = gnlabel; gnlabel++ ; } ;' .NL)\n"+
+"              .OUT('runCL(rlabel.toString());' .NL) /\n"+
+"       '.NL'  .OUT('runextNL();' .NL)    /\n"+
+"       '.LB'  .OUT('runLB();' .NL)       /\n"+
+"       '.TB'  .OUT('runextTB();' .NL)    /\n"+
+"       '.LM+' .OUT('runextLMI();' .NL)   /\n"+
+"       '.LM-' .OUT('runextLMD();' .NL)   ;\n"+
+"\n"+
+"TX1 = TX2 $('/' .OUT('if (!flag) {' .LM+ .NL) TX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"TX2 = TX3 .OUT('if (flag) {' .LM+ .NL) \n"+
+"      $(TX3 .OUT('if (!flag) return;' .NL) ) \n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"TX3 = ( '.TOKEN'         .OUT('runextTFT();' .NL) /\n"+
+"        '.DELTOK'        .OUT('runextTFF();' .NL) /\n"+
+"        '$' .OUT('runSET();' .NL)\n"+
+"            .OUT('while (flag) {' .LM+ .NL)\n"+
+"             TX3 \n"+
+"            .OUT('};' .LM- .NL)                   )\n"+
+"        .OUT('runSET();' .NL)                       /\n"+
+"      '.ANYBUT(' CX1 ')' .OUT('runextNOT();' .NL)\n"+
+"                         .OUT('runextSCN();' .NL)   /\n"+
+"      '.ANY(' CX1 ')'    .OUT('runextSCN();' .NL)   /\n"+
+"      ID                 .OUT('rule'*'();' .NL)     /\n"+
+"      '(' TX1 ')'                                   ;\n"+
+"            \n"+
+"CX1 = CX2 $('!' .OUT('if (!flag) {' .LM+ .NL) CX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"CX2 = CX3 (':' .OUT('runextCGE('*');' .NL) .OUT('if (flag) {' .LM+ .NL) \n"+
+"               CX3\n"+
+"               .OUT('runextCLE('*');' .NL) .OUT(.LM- '} ;' .NL) /\n"+
+"           .EMPTY .OUT('runextCE('*');' .NL)                    ) ;\n"+
+"CX3 = NUMBER ;\n"+
+"\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN ALPHA $(ALPHA/DIGIT) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN DIGIT $DIGIT .DELTOK ;\n"+
+"STRING : PREFIX .ANY(39) .TOKEN $.ANYBUT(13!10!39) .DELTOK .ANY(39) ;\n"+
+"ALPHA  : .ANY(65:90!97:122) ;\n"+
+"DIGIT  : .ANY(48:57) ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i13. add comments and litchr to i12" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' ID .OUT(.LB .TB 'ADR ' * .NL)\n"+
+"          $(PR / COMMENT)  \n"+
+"          '.TOKENS'\n"+
+"          $(TR / COMMENT)\n"+
+"          '.END' .OUT(.TB 'END' .NL) ;\n"+
+"\n"+
+"PR = ID .OUT(.LB * .NL) '=' EX1 ';' .OUT(.TB 'R' .NL) ; \n"+
+"\n"+
+"TR = ID .OUT(.LB * .NL) ':' TX1 ';' .OUT(.TB 'R' .NL) ;\n"+
+"\n"+
+"COMMENT = '[' CMLINE ']' .OUT(.LB ';' * .NL) ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT(.TB 'BT L'# .NL) EX2 )\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT(.TB 'BF L'# .NL) / OUTPUT)\n"+
+"      $(EX3 .OUT(.TB 'BE' .NL) / OUTPUT)\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX3 = ID        .OUT(.TB 'CLL '* .NL)        /\n"+
+"      STRING    .OUT(.TB 'TST ' 39 * 39 .NL) /\n"+
+"      '(' EX1 ')'                            /\n"+
+"      '.EMPTY'  .OUT(.TB 'SET' .NL)          /\n"+
+"      '.LITCHR' .OUT(.TB 'LCH' .NL)          /\n"+
+"      '$' .OUT(.LB 'L'# .NL) EX3 .OUT(.TB 'BT L'# .NL) .OUT(.TB 'SET' .NL) ;\n"+
+"\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'     .OUT(.TB 'CI' .NL)          /\n"+
+"       STRING  .OUT(.TB 'CL ' 39 * 39 .NL) /\n"+
+"       NUMBER  .OUT(.TB 'CC '* .NL)        /\n"+
+"       '#'     .OUT(.TB 'GN' .NL)          /\n"+
+"       '.NL'   .OUT(.TB 'NL' .NL)          /\n"+
+"       '.LB'   .OUT(.TB 'LB' .NL)          /\n"+
+"       '.TB'   .OUT(.TB 'TB' .NL)          /\n"+
+"       '.LM+'  .OUT(.TB 'LMI' .NL)         /\n"+
+"       '.LM-'  .OUT(.TB 'LMD' .NL)         ;\n"+
+"\n"+
+"TX1 = TX2 $('/' .OUT(.TB 'BT T'# .NL) TX2) \n"+
+"      .OUT(.LB 'T'# .NL) ;\n"+
+"\n"+
+"TX2 = TX3 .OUT(.TB 'BF T'# .NL)\n"+
+"      $(TX3 .OUT(.TB 'RF' .NL) )\n"+
+"      .OUT(.LB 'T'# .NL) ;\n"+
+"\n"+
+"TX3 = ( '.TOKEN'         .OUT(.TB 'TFT' .NL) /\n"+
+"        '.DELTOK'        .OUT(.TB 'TFF' .NL) /\n"+
+"        '$' .OUT(.LB 'T'# .NL) TX3 .OUT(.TB 'BT T'# .NL) ) \n"+
+"                         .OUT(.TB 'SET' .NL)               /\n"+
+"      '.ANYBUT(' CX1 ')' .OUT(.TB 'NOT' .NL .TB 'SCN' .NL) /\n"+
+"      '.ANY(' CX1 ')'    .OUT(.TB 'SCN' .NL)               /\n"+
+"      ID                 .OUT(.TB 'CLL ' * .NL)            /\n"+
+"      '(' TX1 ')'                                          ;\n"+
+"            \n"+
+"CX1 = CX2 $('!' .OUT(.TB 'BT C'# .NL) CX2) .OUT(.LB 'C'# .NL) ;\n"+
+"CX2 = CX3 (':' .OUT(.TB 'CGE ' * .NL) .OUT(.TB 'BF D'# .NL) \n"+
+"               CX3\n"+
+"               .OUT(.TB 'CLE ' * .NL) .OUT(.LB 'D' # .NL) /\n"+
+"           .EMPTY .OUT(.TB 'CE ' * .NL)                   ) ;\n"+
+"CX3 = NUMBER / SQUOTE .LITCHR ;\n"+
+"\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN ALPHA $(ALPHA/DIGIT) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN DIGIT $DIGIT .DELTOK ;\n"+
+"STRING : PREFIX .ANY(39) .TOKEN $.ANYBUT(13!10!39) .DELTOK .ANY(39) ;\n"+
+"ALPHA  : .ANY(65:90!97:122) ;\n"+
+"DIGIT  : .ANY(48:57) ;\n"+
+"SQUOTE : PREFIX .ANY(39) ;\n"+
+"CMLINE : .TOKEN $.ANYBUT(10!13!93) .DELTOK ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i13jf. add comments and litchr to i12jf" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' ID\n"+
+"            .OUT(.LB '// '*' compiler' .NL)\n"+
+"            .OUT('function compiler (input) {' .LM+ .NL)\n"+
+"            .OUT('inbuf = input ;' .NL)\n"+
+"            .OUT('inp = 0 ;' .NL)\n"+
+"            .OUT('outbuf = \"\" ;' .NL)\n"+
+"            .OUT('margin = 0 ;' .NL)\n"+
+"            .OUT('gnlabel = 1 ;' .NL)\n"+
+"            .OUT('runextTFF();' .NL)\n"+
+"            .OUT('rule'*'() ;' .NL)\n"+
+"            .OUT('return outbuf ;' .NL)\n"+
+"            .OUT(.LM- '} ;' .NL .NL)\n"+
+"          $(PR / COMMENT)\n"+
+"          '.TOKENS'\n"+
+"          $(TR / COMMENT)\n"+
+"          '.END' ;\n"+
+"\n"+
+"PR = ID .OUT(.LB 'function rule'*' () {' .LM+ .NL)\n"+
+"     .OUT('var rname = \"'*'\" ;' .NL)\n"+
+"     .OUT('var rlabel = 0 ;' .NL)\n"+
+"     '=' EX1 ';'\n"+
+"     .OUT(.LM- '} ;' .NL .NL) ;\n"+
+"\n"+
+"TR = ID .OUT(.LB 'function rule'*' () {' .LM+ .NL)\n"+
+"     .OUT('var rname = \"'*'\" ;' .NL)\n"+
+"     .OUT('var rlabel = 0 ;' .NL)\n"+
+"     ':' TX1 ';'\n"+
+"     .OUT(.LM- '} ;' .NL .NL) ;\n"+
+"\n"+
+"COMMENT = '[' CMLINE ']' .OUT('//' * .NL) ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT('if (!flag) {' .LM+ .NL) EX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT('if (flag) {' .LM+ .NL) / OUTPUT .OUT('if (true) {' .LM+ .NL) )\n"+
+"      $(EX3 .OUT('if (!flag) runBEjsfn(rname);' .NL) / OUTPUT)\n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"EX3 = ID        .OUT('rule'*'();' .NL)   /\n"+
+"      STRING    .OUT('runTST(' 39 * 39 ');' .NL) /\n"+
+"      '(' EX1 ')'                        /\n"+
+"      '.EMPTY'  .OUT('runSET();' .NL)    /\n"+
+"      '.LITCHR' .OUT('runextLCH();' .NL) /\n"+
+"      '$' .OUT('runSET();' .NL)\n"+
+"          .OUT('while (flag) {' .LM+ .NL)\n"+
+"           EX3 \n"+
+"          .OUT('};' .LM- .NL) \n"+
+"          .OUT('runSET();' .NL) ;\n"+
+"\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'    .OUT('runCI();' .NL)    /\n"+
+"       STRING .OUT('runCL(' 39 * 39 ');' .NL) /\n"+
+"       NUMBER .OUT('runextCC('*');' .NL) /\n"+
+"       '#'    .OUT('if (rlabel == 0) { rlabel = gnlabel; gnlabel++ ; } ;' .NL)\n"+
+"              .OUT('runCL(rlabel.toString());' .NL) /\n"+
+"       '.NL'  .OUT('runextNL();' .NL)    /\n"+
+"       '.LB'  .OUT('runLB();' .NL)       /\n"+
+"       '.TB'  .OUT('runextTB();' .NL)    /\n"+
+"       '.LM+' .OUT('runextLMI();' .NL)   /\n"+
+"       '.LM-' .OUT('runextLMD();' .NL)   ;\n"+
+"\n"+
+"TX1 = TX2 $('/' .OUT('if (!flag) {' .LM+ .NL) TX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"TX2 = TX3 .OUT('if (flag) {' .LM+ .NL) \n"+
+"      $(TX3 .OUT('if (!flag) return;' .NL) ) \n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"TX3 = ( '.TOKEN'         .OUT('runextTFT();' .NL) /\n"+
+"        '.DELTOK'        .OUT('runextTFF();' .NL) /\n"+
+"        '$' .OUT('runSET();' .NL)\n"+
+"            .OUT('while (flag) {' .LM+ .NL)\n"+
+"             TX3 \n"+
+"            .OUT('};' .LM- .NL)                   )\n"+
+"        .OUT('runSET();' .NL)                       /\n"+
+"      '.ANYBUT(' CX1 ')' .OUT('runextNOT();' .NL)\n"+
+"                         .OUT('runextSCN();' .NL)   /\n"+
+"      '.ANY(' CX1 ')'    .OUT('runextSCN();' .NL)   /\n"+
+"      ID                 .OUT('rule'*'();' .NL)     /\n"+
+"      '(' TX1 ')'                                   ;\n"+
+"            \n"+
+"CX1 = CX2 $('!' .OUT('if (!flag) {' .LM+ .NL) CX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"CX2 = CX3 (':' .OUT('runextCGE('*');' .NL) .OUT('if (flag) {' .LM+ .NL) \n"+
+"               CX3\n"+
+"               .OUT('runextCLE('*');' .NL) .OUT(.LM- '} ;' .NL) /\n"+
+"           .EMPTY .OUT('runextCE('*');' .NL)                    ) ;\n"+
+"CX3 = NUMBER / SQUOTE .LITCHR ;\n"+
+"\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN ALPHA $(ALPHA/DIGIT) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN DIGIT $DIGIT .DELTOK ;\n"+
+"STRING : PREFIX .ANY(39) .TOKEN $.ANYBUT(13!10!39) .DELTOK .ANY(39) ;\n"+
+"ALPHA  : .ANY(65:90!97:122) ;\n"+
+"DIGIT  : .ANY(48:57) ;\n"+
+"SQUOTE : PREFIX .ANY(39) ;\n"+
+"CMLINE : .TOKEN $.ANYBUT(10!13!93) .DELTOK ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i14. use comments and litchr" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"[ Example Metacompiler Definition ]\n"+
+"[ interpreter code version ]\n"+
+"[ James M. Neighbors ]\n"+
+"\n"+
+"[ body of compiler definition ]\n"+
+"PROGRAM = '.SYNTAX' ID .OUT(.LB .TB 'ADR ' * .NL)\n"+
+"          $(PR / COMMENT)  \n"+
+"          '.TOKENS'\n"+
+"          $(TR / COMMENT)\n"+
+"          '.END' .OUT(.TB 'END' .NL) ;\n"+
+"\n"+
+"[ parsing rule definition ]\n"+
+"PR = ID .OUT(.LB * .NL) '=' EX1 ';' .OUT(.TB 'R' .NL) ; \n"+
+"\n"+
+"[ token rule definition ]\n"+
+"TR = ID .OUT(.LB * .NL) ':' TX1 ';' .OUT(.TB 'R' .NL) ;\n"+
+"\n"+
+"[ comment definition ]\n"+
+"COMMENT = '[' CMLINE ']' .OUT(.LB ';' * .NL) ;\n"+
+"\n"+
+"[ parsing expressions ]\n"+
+"EX1 = EX2 $('/' .OUT(.TB 'BT L'# .NL) EX2 )\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT(.TB 'BF L'# .NL) / OUTPUT)\n"+
+"      $(EX3 .OUT(.TB 'BE' .NL) / OUTPUT)\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX3 = ID        .OUT(.TB 'CLL '* .NL)        /\n"+
+"      STRING    .OUT(.TB 'TST ' 39 * 39 .NL) /\n"+
+"      '(' EX1 ')'                            /\n"+
+"      '.EMPTY'  .OUT(.TB 'SET' .NL)          /\n"+
+"      '.LITCHR' .OUT(.TB 'LCH' .NL)          /\n"+
+"      '$' .OUT(.LB 'L'# .NL) EX3 .OUT(.TB 'BT L'# .NL) .OUT(.TB 'SET' .NL) ;\n"+
+"\n"+
+"[ output expressions ]\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'     .OUT(.TB 'CI' .NL)          /\n"+
+"       STRING  .OUT(.TB 'CL ' 39 * 39 .NL) /\n"+
+"       NUMBER  .OUT(.TB 'CC '* .NL)        /\n"+
+"       '#'     .OUT(.TB 'GN' .NL)          /\n"+
+"       '.NL'   .OUT(.TB 'NL' .NL)          /\n"+
+"       '.LB'   .OUT(.TB 'LB' .NL)          /\n"+
+"       '.TB'   .OUT(.TB 'TB' .NL)          /\n"+
+"       '.LM+'  .OUT(.TB 'LMI' .NL)         /\n"+
+"       '.LM-'  .OUT(.TB 'LMD' .NL)         ;\n"+
+"\n"+
+"[ token expressions ]\n"+
+"TX1 = TX2 $('/' .OUT(.TB 'BT T'# .NL) TX2) \n"+
+"      .OUT(.LB 'T'# .NL) ;\n"+
+"\n"+
+"TX2 = TX3 .OUT(.TB 'BF T'# .NL)\n"+
+"      $(TX3 .OUT(.TB 'RF' .NL) )\n"+
+"      .OUT(.LB 'T'# .NL) ;\n"+
+"\n"+
+"TX3 = ( '.TOKEN'         .OUT(.TB 'TFT' .NL) /\n"+
+"        '.DELTOK'        .OUT(.TB 'TFF' .NL) /\n"+
+"        '$' .OUT(.LB 'T'# .NL) TX3 .OUT(.TB 'BT T'# .NL) ) \n"+
+"                         .OUT(.TB 'SET' .NL)               /\n"+
+"      '.ANYBUT(' CX1 ')' .OUT(.TB 'NOT' .NL .TB 'SCN' .NL) /\n"+
+"      '.ANY(' CX1 ')'    .OUT(.TB 'SCN' .NL)               /\n"+
+"      ID                 .OUT(.TB 'CLL ' * .NL)            /\n"+
+"      '(' TX1 ')'                                          ;\n"+
+"\n"+
+"[ character expressions ]            \n"+
+"CX1 = CX2 $('!' .OUT(.TB 'BT C'# .NL) CX2) .OUT(.LB 'C'# .NL) ;\n"+
+"CX2 = CX3 (':' .OUT(.TB 'CGE ' * .NL) .OUT(.TB 'BF D'# .NL) \n"+
+"               CX3\n"+
+"               .OUT(.TB 'CLE ' * .NL) .OUT(.LB 'D' # .NL) /\n"+
+"           .EMPTY .OUT(.TB 'CE ' * .NL)                   ) ;\n"+
+"CX3 = NUMBER / SQUOTE .LITCHR ;\n"+
+"\n"+
+"[ token definitions ]\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN ALPHA $(ALPHA/DIGIT) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN DIGIT $DIGIT .DELTOK ;\n"+
+"STRING : PREFIX .ANY(39) .TOKEN $.ANYBUT(13!10!39) .DELTOK .ANY(39) ;\n"+
+"ALPHA  : .ANY('A:'Z!'a:'z) ;\n"+
+"DIGIT  : .ANY('0:'9) ;\n"+
+"SQUOTE : PREFIX .ANY('') ;\n"+
+"CMLINE : .TOKEN $.ANYBUT(10!13!']) .DELTOK ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i14jf. use comments and litchr" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"[ Example Metacompiler Definition ]\n"+
+"[ javascript function version ]\n"+
+"[ James M. Neighbors ]\n"+
+"\n"+
+"[ body of compiler definition ]\n"+
+"PROGRAM = '.SYNTAX' ID\n"+
+"            .OUT(.LB '// '*' compiler' .NL)\n"+
+"            .OUT('function compiler (input) {' .LM+ .NL)\n"+
+"            .OUT('inbuf = input ;' .NL)\n"+
+"            .OUT('inp = 0 ;' .NL)\n"+
+"            .OUT('outbuf = \"\" ;' .NL)\n"+
+"            .OUT('margin = 0 ;' .NL)\n"+
+"            .OUT('gnlabel = 1 ;' .NL)\n"+
+"            .OUT('runextTFF();' .NL)\n"+
+"            .OUT('rule'*'() ;' .NL)\n"+
+"            .OUT('return outbuf ;' .NL)\n"+
+"            .OUT(.LM- '} ;' .NL .NL)\n"+
+"          $(PR / COMMENT)\n"+
+"          '.TOKENS'\n"+
+"          $(TR / COMMENT)\n"+
+"          '.END' ;\n"+
+"\n"+
+"[ parsing rule definition ]\n"+
+"PR = ID .OUT(.LB 'function rule'*' () {' .LM+ .NL)\n"+
+"     .OUT('var rname = \"'*'\" ;' .NL)\n"+
+"     .OUT('var rlabel = 0 ;' .NL)\n"+
+"     '=' EX1 ';'\n"+
+"     .OUT(.LM- '} ;' .NL .NL) ;\n"+
+"\n"+
+"[ token rule definition ]\n"+
+"TR = ID .OUT(.LB 'function rule'*' () {' .LM+ .NL)\n"+
+"     .OUT('var rname = \"'*'\" ;' .NL)\n"+
+"     .OUT('var rlabel = 0 ;' .NL)\n"+
+"     ':' TX1 ';'\n"+
+"     .OUT(.LM- '} ;' .NL .NL) ;\n"+
+"\n"+
+"[ comment definition ]\n"+
+"COMMENT = '[' CMLINE ']' .OUT('//' * .NL) ;\n"+
+"\n"+
+"[ parsing expressions ]\n"+
+"EX1 = EX2 $('/' .OUT('if (!flag) {' .LM+ .NL) EX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT('if (flag) {' .LM+ .NL) / OUTPUT .OUT('if (true) {' .LM+ .NL) )\n"+
+"      $(EX3 .OUT('if (!flag) runBEjsfn(rname);' .NL) / OUTPUT)\n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"EX3 = ID        .OUT('rule'*'();' .NL)   /\n"+
+"      STRING    .OUT('runTST(' 39 * 39 ');' .NL) /\n"+
+"      '(' EX1 ')'                        /\n"+
+"      '.EMPTY'  .OUT('runSET();' .NL)    /\n"+
+"      '.LITCHR' .OUT('runextLCH();' .NL) /\n"+
+"      '$' .OUT('runSET();' .NL)\n"+
+"          .OUT('while (flag) {' .LM+ .NL)\n"+
+"           EX3 \n"+
+"          .OUT('};' .LM- .NL) \n"+
+"          .OUT('runSET();' .NL) ;\n"+
+"\n"+
+"[ output expressions ]\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'    .OUT('runCI();' .NL)    /\n"+
+"       STRING .OUT('runCL(' 39 * 39 ');' .NL) /\n"+
+"       NUMBER .OUT('runextCC('*');' .NL) /\n"+
+"       '#'    .OUT('if (rlabel == 0) { rlabel = gnlabel; gnlabel++ ; } ;' .NL)\n"+
+"              .OUT('runCL(rlabel.toString());' .NL) /\n"+
+"       '.NL'  .OUT('runextNL();' .NL)    /\n"+
+"       '.LB'  .OUT('runLB();' .NL)       /\n"+
+"       '.TB'  .OUT('runextTB();' .NL)    /\n"+
+"       '.LM+' .OUT('runextLMI();' .NL)   /\n"+
+"       '.LM-' .OUT('runextLMD();' .NL)   ;\n"+
+"\n"+
+"[ token expressions ]\n"+
+"TX1 = TX2 $('/' .OUT('if (!flag) {' .LM+ .NL) TX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"TX2 = TX3 .OUT('if (flag) {' .LM+ .NL) \n"+
+"      $(TX3 .OUT('if (!flag) return;' .NL) ) \n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"TX3 = ( '.TOKEN'         .OUT('runextTFT();' .NL) /\n"+
+"        '.DELTOK'        .OUT('runextTFF();' .NL) /\n"+
+"        '$' .OUT('runSET();' .NL)\n"+
+"            .OUT('while (flag) {' .LM+ .NL)\n"+
+"             TX3 \n"+
+"            .OUT('};' .LM- .NL)                   )\n"+
+"        .OUT('runSET();' .NL)                       /\n"+
+"      '.ANYBUT(' CX1 ')' .OUT('runextNOT();' .NL)\n"+
+"                         .OUT('runextSCN();' .NL)   /\n"+
+"      '.ANY(' CX1 ')'    .OUT('runextSCN();' .NL)   /\n"+
+"      ID                 .OUT('rule'*'();' .NL)     /\n"+
+"      '(' TX1 ')'                                   ;\n"+
+"            \n"+
+"[ character expressions ]            \n"+
+"CX1 = CX2 $('!' .OUT('if (!flag) {' .LM+ .NL) CX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"CX2 = CX3 (':' .OUT('runextCGE('*');' .NL) .OUT('if (flag) {' .LM+ .NL) \n"+
+"               CX3\n"+
+"               .OUT('runextCLE('*');' .NL) .OUT(.LM- '} ;' .NL) /\n"+
+"           .EMPTY .OUT('runextCE('*');' .NL)                    ) ;\n"+
+"CX3 = NUMBER / SQUOTE .LITCHR ;\n"+
+"\n"+
+"[ token definitions ]\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN ALPHA $(ALPHA/DIGIT) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN DIGIT $DIGIT .DELTOK ;\n"+
+"STRING : PREFIX .ANY(39) .TOKEN $.ANYBUT(13!10!39) .DELTOK .ANY(39) ;\n"+
+"ALPHA  : .ANY('A:'Z!'a:'z) ;\n"+
+"DIGIT  : .ANY('0:'9) ;\n"+
+"SQUOTE : PREFIX .ANY('') ;\n"+
+"CMLINE : .TOKEN $.ANYBUT(10!13!']) .DELTOK ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i14js. convert i14jf to js object" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"[ Example Metacompiler Definition ]\n"+
+"[ fully contained javascript object version ]\n"+
+"[ James M. Neighbors ]\n"+
+"\n"+
+"[ body of compiler definition ]\n"+
+"PROGRAM = '.SYNTAX' ID \n"+
+"          .OUT(.LB '// ' * ' compiler' .NL)\n"+
+"          .OUT('compiler = {' .LM+ .NL .NL)\n"+
+"          PREAMBLE\n"+
+"          $(PR / COMMENT)  \n"+
+"          '.TOKENS'\n"+
+"          $(TR / COMMENT)\n"+
+"          '.END' \n"+
+"          POSTAMBLE \n"+
+"          .OUT(.LM- '}' .NL) ;     \n"+
+"                                            \n"+
+"[ object definition preamble ]\n"+
+"PREAMBLE = .OUT('compile: function (input) {' .LM+ .NL)\n"+
+"           .OUT('// initialize compiler variables' .NL)\n"+
+"           .OUT('this.inbuf = input ;' .NL)\n"+
+"           .OUT('this.initialize() ;' .NL)\n"+
+"           .OUT('// call the first rule' .NL)\n"+
+"           .OUT('this.ctxpush(' 39 * 39 ') ;' .NL)\n"+
+"           .OUT('this.rule' * '() ;' .NL)\n"+
+"           .OUT('this.ctxpop() ;' .NL)\n"+
+"           .OUT('// special case handling of first rule failure' .NL)\n"+
+"           .OUT('if ((!this.eflag) && (!this.pflag)) {' .LM+ .NL)\n"+
+"           .OUT('this.eflag = true ;' .NL)\n"+
+"           .OUT('this.erule = ' 39 * 39 ' ;' .NL)\n"+
+"           .OUT('this.einput = this.inp ; } ;' .LM- .NL)\n"+
+"           .OUT('return this.eflag ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL) ;\n"+
+"\n"+
+"\n"+
+"[ runtime and object definition postamble ] \n"+
+"POSTAMBLE = \n"+
+"           .OUT('// runtime variables' .NL)\n"+
+"           .OUT('pflag: false ,' .NL)\n"+
+"           .OUT('tflag: false ,' .NL)\n"+
+"           .OUT('eflag: false ,' .NL)\n"+
+"           .OUT('inp: 0 ,' .NL)\n"+
+"           .OUT('inbuf:  ' 39 39 ' ,' .NL)\n"+
+"           .OUT('outbuf:  ' 39 39 ' ,' .NL)\n"+
+"           .OUT('erule:  ' 39 39 ' ,' .NL)\n"+
+"           .OUT('einput: 0 ,' .NL)\n"+
+"           .OUT('token: ' 39 39 ' ,' .NL)\n"+
+"           .OUT('labelcount: 0 ,' .NL)\n"+
+"           .OUT('stackframesize: 3 ,' .NL)\n"+
+"           .OUT('stackframe: 0 ,' .NL)\n"+
+"           .OUT('stos: -1 ,' .NL)\n"+
+"           .OUT('stack: [] ,' .NL .NL)\n"+
+"\n"+
+"           .OUT('initialize: function () {'.LM+ .NL)\n"+
+"           .OUT('// initialize for another compile' .NL)\n"+
+"           .OUT('this.pflag = false ;' .NL)\n"+
+"           .OUT('this.tflag = false ;' .NL)\n"+
+"           .OUT('this.eflag = false ;' .NL)\n"+
+"           .OUT('this.inp = 0 ;' .NL)\n"+
+"           .OUT('this.outbuf = ' 39 39 ' ;' .NL)\n"+
+"           .OUT('this.erule = ' 39 39 ' ;' .NL)\n"+
+"           .OUT('this.einput = 0 ;' .NL)\n"+
+"           .OUT('this.token = ' 39 39 ' ;' .NL)\n"+
+"           .OUT('this.labelcount = 1 ;' .NL)\n"+
+"           .OUT('this.stackframe = -1 ;' .NL)\n"+
+"           .OUT('this.stos = -1 ;' .NL)\n"+
+"           .OUT('this.stack = [] ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('ctxpush: function (rulename){' .LM+ .NL)\n"+
+"           .OUT('// push and initialize a new stackframe' .NL)\n"+
+"           .OUT('var LM ;' .NL)  \n"+
+"           .OUT('// new context inherits current context left margin' .NL)\n"+
+"           .OUT('LM = 0; if (this.stackframe >= 0) LM = this.stack[this.stackframe + 2] ;' .NL)\n"+
+"           .OUT('this.stos++ ;' .NL)\n"+
+"           .OUT('this.stackframe = this.stos * this.stackframesize ;' .NL)\n"+
+"           .OUT('// stackframe definition' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 0] = 0 ;        // generated label' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 1] = rulename ; // called rule name' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 2] = LM ;       // left margin' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL) \n"+
+"\n"+
+"           .OUT('ctxpop: function (){' .LM+ .NL)\n"+
+"           .OUT('// pop and possibly deallocate old stackframe' .NL)\n"+
+"           .OUT('this.stos-- ; // pop stackframe' .NL)\n"+
+"           .OUT('this.stackframe = this.stos * this.stackframesize ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)          \n"+
+"\n"+
+"           .OUT('out: function (s){' .LM+ .NL)\n"+
+"           .OUT('// output string' .NL)\n"+
+"           .OUT('var i ;' .NL)\n"+
+"           .OUT('// if newline last output, add left margin before string' .NL)\n"+
+"           .OUT('if (this.outbuf.charAt(this.outbuf.length - 1) == ' 39 92 'n' 39 ') {' .NL)\n"+
+"           .OUT('  i = this.stack[this.stackframe + 2] ;' .NL)\n"+
+"           .OUT('  while (i>0) { this.outbuf += ' 39 ' ' 39 ' ; i-- } ; } ;' .NL)\n"+
+"           .OUT('this.outbuf += s ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('eol: function (){' .LM+ .NL)\n"+
+"           .OUT('// output end of line' .NL)\n"+
+"           .OUT('this.outbuf += ' 39 92 'n' 39 ' ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('test: function (s) {' .LM+ .NL)\n"+
+"           .OUT('// test for a string in the input' .NL)\n"+
+"           .OUT('var i ;' .NL)\n"+
+"           .OUT('// delete whitespace' .NL) \n"+
+"           .OUT('while ((this.inbuf.charAt(this.inp) == ' 39 ' ' 39 ')  ||' .NL)\n"+
+"           .OUT('       (this.inbuf.charAt(this.inp) == ' 39 92 'n' 39 ') ||' .NL) \n"+
+"           .OUT('       (this.inbuf.charAt(this.inp) == ' 39 92 'r' 39 ') ||' .NL)\n"+
+"           .OUT('       (this.inbuf.charAt(this.inp) == ' 39 92 't' 39 ') ) this.inp++ ;' .NL)\n"+
+"           .OUT('// test string case insensitive' .NL) \n"+
+"           .OUT('this.pflag = true ; i = 0 ;' .NL)\n"+
+"           .OUT('while (this.pflag && (i < s.length) && ((this.inp+i) < this.inbuf.length) )' .NL)\n"+
+"           .OUT('{ this.pflag = (s.charAt(i).toUpperCase() ==' .NL)\n"+
+"           .OUT('                this.inbuf.charAt(this.inp+i).toUpperCase()) ;' .NL)\n"+
+"           .OUT('  i++ ; } ;' .NL)\n"+
+"           .OUT('this.pflag = this.pflag && (i == s.length) ;' .NL)\n"+
+"           .OUT('// advance input if found' .NL) \n"+
+"           .OUT('if (this.pflag) this.inp = this.inp + s.length ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('err: function () {' .LM+ .NL)\n"+
+"           .OUT('// compilation error, provide error indication and context' .NL)\n"+
+"           .OUT('this.eflag = true ;' .NL)\n"+
+"           .OUT('this.erule = this.stack[this.stackframe + 1] ;' .NL)\n"+
+"           .OUT('this.einput = this.inp ;' .NL)\n"+
+"           .OUT(.LM- '}' .NL .NL) ;\n"+
+"\n"+
+"[ parsing rule definition ]\n"+
+"PR = ID .OUT('rule'* ': function () {' .LM+ .NL)\n"+
+"     '=' EX1 ';'\n"+
+"     .OUT(.LM- '} ,' .NL .NL) ;\n"+
+"\n"+
+"[ token rule definition ]\n"+
+"TR = ID .OUT('rule'* ': function () {' .LM+ .NL)\n"+
+"     ':' TX1 ';'\n"+
+"     .OUT(.LM- '} ,' .NL .NL) ;\n"+
+"\n"+
+"[ comment definition ]\n"+
+"COMMENT = '[' CMLINE ']' .OUT('//' * .NL) ;\n"+
+"\n"+
+"[ parsing expressions ]\n"+
+"EX1 = EX2 $('/' .OUT('if (!this.pflag) {' .LM+ .NL) EX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT('if (this.pflag) {' .LM+ .NL) / OUTPUT .OUT('if (true) {' .LM+ .NL) )\n"+
+"      $(EX3 .OUT('if (!this.pflag) this.err();' .NL) / OUTPUT)\n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"\n"+
+"EX3 = ID        .OUT('this.ctxpush(' 39 * 39 ') ;' .NL)\n"+
+"                .OUT('this.rule' * '() ;' .NL)\n"+
+"                .OUT('this.ctxpop() ;' .NL)\n"+
+"                .OUT('if (this.eflag) return ;' .NL)  /\n"+
+"      STRING    .OUT('this.test(' 39 * 39 ');' .NL) /\n"+
+"      '(' EX1 ')'                            /\n"+
+"      '.EMPTY'  .OUT('this.pflag = true ;' .NL)    /\n"+
+"      '.LITCHR' .OUT('this.token = this.inbuf.charCodeAt(this.inp) ;' .NL)\n"+
+"                .OUT('this.inp++ ;' .NL)  /\n"+
+"      '$' .OUT('this.pflag = true ;' .NL)\n"+
+"          .OUT('while (this.pflag) {' .LM+ .NL)\n"+
+"           EX3 \n"+
+"          .OUT(.LM- '} ;' .NL)\n"+
+"          .OUT('this.pflag = true ;' .NL) ;\n"+
+"\n"+
+"[ output expressions ]\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'     .OUT('this.out(this.token) ;' .NL)          /\n"+
+"       STRING  .OUT('this.out(' 39 * 39 ') ;' .NL) /\n"+
+"       NUMBER  .OUT('this.out(String.fromCharCode(' * ')) ;' .NL)        /\n"+
+"       '#'     .OUT('if (this.stack[this.stackframe + 0] == 0) {' .LM+ .NL) \n"+
+"               .OUT('this.stack[this.stackframe + 0] = this.labelcount ;' .NL)\n"+
+"               .OUT('this.labelcount++ ; } ;' .LM- .NL) \n"+
+"               .OUT('this.out(this.stack[this.stackframe + 0]) ;' .NL) /\n"+
+"       '.NL'   .OUT('this.eol() ;' .NL)          /\n"+
+"       '.LB'             /\n"+
+"       '.TB'   .OUT('this.out(' 39 92 't' 39 ') ;' .NL)          /\n"+
+"       '.LM+'  .OUT('this.stack[this.stackframe + 2] += 2 ;' .NL) /\n"+
+"       '.LM-'  .OUT('this.stack[this.stackframe + 2] -= 2 ;' .NL) ;\n"+
+"\n"+
+"[ token expressions ]\n"+
+"TX1 = TX2 $('/' .OUT('if (!this.pflag) {' .LM+ .NL) TX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"TX2 = TX3 .OUT('if (this.pflag) {' .LM+ .NL) \n"+
+"      $(TX3 .OUT('if (!this.pflag) return;' .NL) ) \n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"TX3 = ( '.TOKEN'  .OUT('this.tflag = true ; ' .NL)\n"+
+"                  .OUT('this.token = ' 39 39 ' ;' .NL) /\n"+
+"        '.DELTOK' .OUT('this.tflag = false ;' .NL) /\n"+
+"        '$' .OUT('this.pflag = true ;' .NL)\n"+
+"            .OUT('while (this.pflag) {' .LM+ .NL)\n"+
+"             TX3 \n"+
+"            .OUT(.LM- '};' .NL) )\n"+
+"        .OUT('this.pflag = true ;' .NL) /\n"+
+"      '.ANYBUT(' CX1 ')' .OUT('this.pflag = !this.pflag ;' .NL) \n"+
+"        .OUT('if (this.pflag) {' .LM+ .NL)\n"+
+"        .OUT('if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;' .NL)\n"+
+"        .OUT('this.inp++ } ;' .LM- .NL) /\n"+
+"      '.ANY(' CX1 ')' \n"+
+"        .OUT('if (this.pflag) {' .LM+ .NL)\n"+
+"        .OUT('if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;' .NL)\n"+
+"        .OUT('this.inp++ } ;' .LM- .NL) /\n"+
+"      ID                 \n"+
+"        .OUT('this.ctxpush(' 39 * 39 ') ;' .NL)\n"+
+"        .OUT('this.rule' * '() ;' .NL)\n"+
+"        .OUT('this.ctxpop() ;' .NL)\n"+
+"        .OUT('if (this.eflag) return ;' .NL)  /\n"+
+"      '(' TX1 ')'  ;\n"+
+"\n"+
+"[ character expressions ]            \n"+
+"CX1 = .OUT('this.pflag = ' .LM+ .NL)\n"+
+"      CX2 $('!' .OUT(' ||' .NL) CX2)\n"+
+"      .OUT(.LM- ' ;' .NL) ;\n"+
+"CX2 = CX3 (':' .OUT('((this.inbuf.charCodeAt(this.inp) >= ' * ') &&' .NL)\n"+
+"               CX3\n"+
+"               .OUT(' (this.inbuf.charCodeAt(this.inp) <= ' * ')  )' ) /\n"+
+"           .EMPTY .OUT('(this.inbuf.charCodeAt(this.inp) == ' * ') ' )  ) ;\n"+
+"CX3 = NUMBER / SQUOTE .LITCHR ;\n"+
+"\n"+
+"[ token definitions ]\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN ALPHA $(ALPHA/DIGIT) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN DIGIT $DIGIT .DELTOK ;\n"+
+"STRING : PREFIX .ANY(39) .TOKEN $.ANYBUT(13!10!39) .DELTOK .ANY(39) ;\n"+
+"ALPHA  : .ANY('A:'Z!'a:'z) ;\n"+
+"DIGIT  : .ANY('0:'9) ;\n"+
+"SQUOTE : PREFIX .ANY('') ;\n"+
+"CMLINE : .TOKEN $.ANYBUT(10!13!']) .DELTOK ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i02a. demo, AEXP example assignment compiler" ;
+Input_text[Input_count] =
+".SYNTAX AEXP\n"+
+"\n"+
+"AEXP = AS $AS ;\n"+
+"AS = ID .OUT(.TB 'address ' * .NL) ':=' RX1 .OUT(.TB 'store' .NL) ';' ;\n"+
+"RX1 = RX2 ('='  RX2 .OUT(.TB 'eq' .NL) /\n"+
+"           '<'  RX2 .OUT(.TB 'lt' .NL) /\n"+
+"           '>'  RX2 .OUT(.TB 'gt' .NL) /\n"+
+"           '<=' RX2 .OUT(.TB 'le' .NL) /\n"+
+"           '>=' RX2 .OUT(.TB 'ge' .NL) /\n"+
+"           .EMPTY) ;\n"+
+"RX2 = '~' EX0 .OUT(.TB 'not' .NL) / EX0 ;\n"+
+"EX0 = EX1 ('<-' EX1 .OUT(.TB 'shl' .NL) /\n"+
+"           '->' EX2 .OUT(.TB 'shr' .NL) /\n"+
+"           .EMPTY) ;\n"+
+"EX1 = EX2 $('+' EX2 .OUT(.TB 'add' .NL) /\n"+
+"            '-' EX2 .OUT(.TB 'sub' .NL) ) ;\n"+
+"EX2 = EX3 $('*' EX3 .OUT(.TB 'mpy' .NL) /\n"+
+"            '/' EX3 .OUT(.TB 'div' .NL) ) ;\n"+
+"EX3 = EX4 $('^' EX3 .OUT(.TB 'exp' .NL)) ;\n"+
+"EX4 = '+' EX5 / '-' EX5 .OUT(.TB 'minus' .NL) / EX5 ;\n"+
+"EX5 = ID  .OUT(.TB 'load ' * .NL) /\n"+
+"      NUMBER .OUT(.TB 'literal ' * .NL) /\n"+
+"      '(' EX1 ')' ;\n"+
+"\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN .ANY('A:'Z!'a:'z) $(.ANY('A:'Z!'a:'z) / .ANY('0:'9)) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN .ANY('0:'9) $.ANY('0:'9) .DELTOK ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i01a. demo, AEXP2 backup value assignments" ;
+Input_text[Input_count] =
+"fern:=5+6;\n"+
+"ace:=fern*5;\n"+
+"waldo:=fern+alpha/-beta^gamma;\n"+
+"fern:=5<=6;\n"+
+"ace:=fern*5>=bob;\n"+
+"waldo:=fern<-alpha<=beta->gamma;\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i15js. js metacompiler with backup" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"[ Example Metacompiler Definition ]\n"+
+"[ fully contained javascript object version with backup ]\n"+
+"[ James M. Neighbors ]\n"+
+"\n"+
+"[ body of compiler definition ]\n"+
+"PROGRAM = '.SYNTAX' ID \n"+
+"          .OUT(.LB '// ' * ' compiler' .NL)\n"+
+"          .OUT('compiler = {' .LM+ .NL .NL)\n"+
+"          PREAMBLE\n"+
+"          $(PR / COMMENT)  \n"+
+"          '.TOKENS'\n"+
+"          $(TR / COMMENT)\n"+
+"          '.END' \n"+
+"          POSTAMBLE \n"+
+"          .OUT(.LM- '}' .NL) ;     \n"+
+"                                            \n"+
+"[ object definition preamble ]\n"+
+"PREAMBLE = .OUT('compile: function (input) {' .LM+ .NL)\n"+
+"           .OUT('// initialize compiler variables' .NL)\n"+
+"           .OUT('this.inbuf = input ;' .NL)\n"+
+"           .OUT('this.initialize() ;' .NL)\n"+
+"           .OUT('// call the first rule' .NL)\n"+
+"           .OUT('this.ctxpush(' 39 * 39 ') ;' .NL)\n"+
+"           .OUT('this.rule' * '() ;' .NL)\n"+
+"           .OUT('this.ctxpop() ;' .NL)\n"+
+"           .OUT('// special case handling of first rule failure' .NL)\n"+
+"           .OUT('if ((!this.eflag) && (!this.pflag)) {' .LM+ .NL)\n"+
+"           .OUT('this.eflag = true ;' .NL)\n"+
+"           .OUT('this.erule = ' 39 * 39 ' ;' .NL)\n"+
+"           .OUT('this.einput = this.inp ; } ;' .LM- .NL)\n"+
+"           .OUT('return this.eflag ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL) ;\n"+
+"\n"+
+"\n"+
+"[ runtime and object definition postamble ] \n"+
+"POSTAMBLE = \n"+
+"           .OUT('// runtime variables' .NL)\n"+
+"           .OUT('pflag: false ,' .NL)\n"+
+"           .OUT('tflag: false ,' .NL)\n"+
+"           .OUT('eflag: false ,' .NL)\n"+
+"           .OUT('inp: 0 ,' .NL)\n"+
+"           .OUT('inbuf:  ' 39 39 ' ,' .NL)\n"+
+"           .OUT('outbuf:  ' 39 39 ' ,' .NL)\n"+
+"           .OUT('erule:  ' 39 39 ' ,' .NL)\n"+
+"           .OUT('einput: 0 ,' .NL)\n"+
+"           .OUT('token: ' 39 39 ' ,' .NL)\n"+
+"           .OUT('labelcount: 0 ,' .NL)\n"+
+"           .OUT('stackframesize: 6 ,' .NL)\n"+
+"           .OUT('stackframe: 0 ,' .NL)\n"+
+"           .OUT('stos: -1 ,' .NL)\n"+
+"           .OUT('stack: [] ,' .NL .NL)\n"+
+"\n"+
+"           .OUT('initialize: function () {'.LM+ .NL)\n"+
+"           .OUT('// initialize for another compile' .NL)\n"+
+"           .OUT('this.pflag = false ;' .NL)\n"+
+"           .OUT('this.tflag = false ;' .NL)\n"+
+"           .OUT('this.eflag = false ;' .NL)\n"+
+"           .OUT('this.inp = 0 ;' .NL)\n"+
+"           .OUT('this.outbuf = ' 39 39 ' ;' .NL)\n"+
+"           .OUT('this.erule = ' 39 39 ' ;' .NL)\n"+
+"           .OUT('this.einput = 0 ;' .NL)\n"+
+"           .OUT('this.token = ' 39 39 ' ;' .NL)\n"+
+"           .OUT('this.labelcount = 1 ;' .NL)\n"+
+"           .OUT('this.stackframe = -1 ;' .NL)\n"+
+"           .OUT('this.stos = -1 ;' .NL)\n"+
+"           .OUT('this.stack = [] ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('ctxpush: function (rulename){' .LM+ .NL)\n"+
+"           .OUT('// push and initialize a new stackframe' .NL)\n"+
+"           .OUT('var LM ;' .NL)  \n"+
+"           .OUT('// new context inherits current context left margin' .NL)\n"+
+"           .OUT('LM = 0; if (this.stackframe >= 0) LM = this.stack[this.stackframe + 2] ;' .NL)\n"+
+"           .OUT('this.stos++ ;' .NL)\n"+
+"           .OUT('this.stackframe = this.stos * this.stackframesize ;' .NL)\n"+
+"           .OUT('// stackframe definition' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 0] = 0 ;        // generated label' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 1] = rulename ; // called rule name' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 2] = LM ;       // left margin' .NL)\n"+
+"           .OUT('// clear additional stackframe backtracking entries' .NL)\n"+
+"           .OUT('this.bkclear() ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('ctxpop: function (){' .LM+ .NL)\n"+
+"           .OUT('// pop and possibly deallocate old stackframe' .NL)\n"+
+"           .OUT('this.stos-- ; // pop stackframe' .NL)\n"+
+"           .OUT('this.stackframe = this.stos * this.stackframesize ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)          \n"+
+"\n"+
+"           .OUT('out: function (s){' .LM+ .NL)\n"+
+"           .OUT('// output string' .NL)\n"+
+"           .OUT('var i ;' .NL)\n"+
+"           .OUT('// if newline last output, add left margin before string' .NL)\n"+
+"           .OUT('if (this.outbuf.charAt(this.outbuf.length - 1) == ' 39 92 'n' 39 ') {' .NL)\n"+
+"           .OUT('  i = this.stack[this.stackframe + 2] ;' .NL)\n"+
+"           .OUT('  while (i>0) { this.outbuf += ' 39 ' ' 39 ' ; i-- } ; } ;' .NL)\n"+
+"           .OUT('this.outbuf += s ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('eol: function (){' .LM+ .NL)\n"+
+"           .OUT('// output end of line' .NL)\n"+
+"           .OUT('this.outbuf += ' 39 92 'n' 39 ' ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('test: function (s) {' .LM+ .NL)\n"+
+"           .OUT('// test for a string in the input' .NL)\n"+
+"           .OUT('var i ;' .NL)\n"+
+"           .OUT('// delete whitespace' .NL) \n"+
+"           .OUT('while ((this.inbuf.charAt(this.inp) == ' 39 ' ' 39 ')  ||' .NL)\n"+
+"           .OUT('       (this.inbuf.charAt(this.inp) == ' 39 92 'n' 39 ') ||' .NL) \n"+
+"           .OUT('       (this.inbuf.charAt(this.inp) == ' 39 92 'r' 39 ') ||' .NL)\n"+
+"           .OUT('       (this.inbuf.charAt(this.inp) == ' 39 92 't' 39 ') ) this.inp++ ;' .NL)\n"+
+"           .OUT('// test string case insensitive' .NL) \n"+
+"           .OUT('this.pflag = true ; i = 0 ;' .NL)\n"+
+"           .OUT('while (this.pflag && (i < s.length) && ((this.inp+i) < this.inbuf.length) )' .NL)\n"+
+"           .OUT('{ this.pflag = (s.charAt(i).toUpperCase() ==' .NL)\n"+
+"           .OUT('                this.inbuf.charAt(this.inp+i).toUpperCase()) ;' .NL)\n"+
+"           .OUT('  i++ ; } ;' .NL)\n"+
+"           .OUT('this.pflag = this.pflag && (i == s.length) ;' .NL)\n"+
+"           .OUT('// advance input if found' .NL) \n"+
+"           .OUT('if (this.pflag) this.inp = this.inp + s.length ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('bkerr: function () {' .LM+ .NL)\n"+
+"           .OUT('// compilation error, provide error indication and context' .NL)\n"+
+"           .OUT('this.eflag = true ;' .NL)\n"+
+"           .OUT('this.erule = this.stack[this.stackframe + 1] ;' .NL)\n"+
+"           .OUT('this.einput = this.inp ;' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('bkset: function () {' .LM+ .NL)\n"+
+"           .OUT('// set backtrack context on stack' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 3] = this.inp ;           // input position' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 4] = this.outbuf.length ; // output position' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 5] = this.token ;         // current token' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('bkclear: function () {' .LM+ .NL)\n"+
+"           .OUT('// clear backtrack context on stack' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 3] = -1 ; // input position' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 4] = -1 ; // output position' .NL)\n"+
+"           .OUT('this.stack[this.stackframe + 5] = ' 39 39 ' ; // current token' .NL)\n"+
+"           .OUT(.LM- '},' .NL .NL)\n"+
+"\n"+
+"           .OUT('bkrestore: function () {' .LM+ .NL)\n"+
+"           .OUT('// restore context for backtracking' .NL)\n"+
+"           .OUT('this.eflag = false ;' .NL)\n"+
+"           .OUT('this.inp = this.stack[this.stackframe + 3] ;           // input position' .NL)\n"+
+"           .OUT('this.outbuf = this.outbuf.substring(0,this.stack[this.stackframe + 4]) ; // output position' .NL)\n"+
+"           .OUT('this.token = this.stack[this.stackframe + 5] ;         // current token' .NL)\n"+
+"           .OUT(.LM- '}' .NL .NL) ;\n"+
+"\n"+
+"[ parsing rule definition ]\n"+
+"PR = ID .OUT('rule'* ': function () {' .LM+ .NL)\n"+
+"     '=' EX1 ';'\n"+
+"     .OUT(.LM- '} ,' .NL .NL) ;\n"+
+"\n"+
+"[ token rule definition ]\n"+
+"TR = ID .OUT('rule'* ': function () {' .LM+ .NL)\n"+
+"     ':' TX1 ';'\n"+
+"     .OUT(.LM- '} ,' .NL .NL) ;\n"+
+"\n"+
+"[ comment definition ]\n"+
+"COMMENT = '[' CMLINE ']' .OUT('//' * .NL) ;\n"+
+"\n"+
+"[ parsing expressions ]\n"+
+"EX1 = EX2 $('/' .OUT('if ((!this.pflag) && (!this.eflag)) {' .LM+ .NL)\n"+
+"                EX2\n"+
+"                .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT('if (this.pflag) {' .LM+ .NL) /\n"+
+"       OUTPUT .OUT('if (true) {' .LM+ .NL) )\n"+
+"      .OUT('while (!this.eflag) {' .LM+ .NL)\n"+
+"      $(EX3 .OUT('if (!this.pflag) this.bkerr();' .NL)\n"+
+"            .OUT('if (this.eflag) break ;' .NL) /\n"+
+"        OUTPUT)\n"+
+"      .OUT('break }' .LM- .NL)\n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"EX3 = ID        .OUT('this.ctxpush(' 39 * 39 ') ;' .NL)\n"+
+"                .OUT('this.rule' * '() ;' .NL)\n"+
+"                .OUT('this.ctxpop() ;' .NL) /\n"+
+"      STRING    .OUT('this.test(' 39 * 39 ');' .NL) /\n"+
+"      '(' EX1 ')'                            /\n"+
+"      '.EMPTY'  .OUT('this.pflag = true ;' .NL)    /\n"+
+"      '.LITCHR' .OUT('this.token = this.inbuf.charCodeAt(this.inp) ;' .NL)\n"+
+"                .OUT('this.inp++ ;' .NL)  /\n"+
+"      '.PASS'   .OUT('this.inp = 0 ;' .NL)  /\n"+
+"      '$' .OUT('this.pflag = true ;' .NL)\n"+
+"          .OUT('while (this.pflag & !this.eflag) {' .LM+ .NL)\n"+
+"           EX3 \n"+
+"          .OUT(.LM- '} ;' .NL)\n"+
+"          .OUT('this.pflag = !this.eflag ;' .NL) /\n"+
+"      '[' .OUT('this.bkset() ;' .NL)\n"+
+"          EX1\n"+
+"          $('|' .OUT('if (!this.pflag) {' .LM+ .NL)\n"+
+"                .OUT('if (this.eflag) this.bkrestore() ;' .NL)\n"+
+"                EX1\n"+
+"                .OUT(.LM- '} ;' .NL) )\n"+
+"      ']' .OUT('if (this.eflag) this.bkrestore() ;' .NL)\n"+
+"          .OUT('this.bkclear() ;' .NL) ;\n"+
+"\n"+
+"[ output expressions ]\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' ;\n"+
+"\n"+
+"OUT1 = '*'     .OUT('this.out(this.token) ;' .NL)          /\n"+
+"       STRING  .OUT('this.out(' 39 * 39 ') ;' .NL) /\n"+
+"       NUMBER  .OUT('this.out(String.fromCharCode(' * ')) ;' .NL)        /\n"+
+"       '#'     .OUT('if (this.stack[this.stackframe + 0] == 0) {' .LM+ .NL) \n"+
+"               .OUT('this.stack[this.stackframe + 0] = this.labelcount ;' .NL)\n"+
+"               .OUT('this.labelcount++ ; } ;' .LM- .NL) \n"+
+"               .OUT('this.out(this.stack[this.stackframe + 0]) ;' .NL) /\n"+
+"       '.NL'   .OUT('this.eol() ;' .NL)          /\n"+
+"       '.LB'             /\n"+
+"       '.TB'   .OUT('this.out(' 39 92 't' 39 ') ;' .NL)          /\n"+
+"       '.LM+'  .OUT('this.stack[this.stackframe + 2] += 2 ;' .NL) /\n"+
+"       '.LM-'  .OUT('this.stack[this.stackframe + 2] -= 2 ;' .NL) ;\n"+
+"\n"+
+"[ token expressions ]\n"+
+"TX1 = TX2 $('/' .OUT('if (!this.pflag) {' .LM+ .NL) TX2 .OUT(.LM- '} ;' .NL) ) ;\n"+
+"\n"+
+"TX2 = TX3 .OUT('if (this.pflag) {' .LM+ .NL) \n"+
+"      $(TX3 .OUT('if (!this.pflag) return;' .NL) ) \n"+
+"      .OUT(.LM- '} ;' .NL) ;\n"+
+"\n"+
+"TX3 = ( '.TOKEN'  .OUT('this.tflag = true ; ' .NL)\n"+
+"                  .OUT('this.token = ' 39 39 ' ;' .NL) /\n"+
+"        '.DELTOK' .OUT('this.tflag = false ;' .NL) /\n"+
+"        '$' .OUT('this.pflag = true ;' .NL)\n"+
+"            .OUT('while (this.pflag) {' .LM+ .NL)\n"+
+"             TX3 \n"+
+"            .OUT(.LM- '};' .NL) )\n"+
+"        .OUT('this.pflag = true ;' .NL) /\n"+
+"      '.ANYBUT(' CX1 ')' .OUT('this.pflag = !this.pflag ;' .NL) \n"+
+"        .OUT('if (this.pflag) {' .LM+ .NL)\n"+
+"        .OUT('if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;' .NL)\n"+
+"        .OUT('this.inp++ } ;' .LM- .NL) /\n"+
+"      '.ANY(' CX1 ')' \n"+
+"        .OUT('if (this.pflag) {' .LM+ .NL)\n"+
+"        .OUT('if (this.tflag) this.token += this.inbuf.charAt(this.inp) ;' .NL)\n"+
+"        .OUT('this.inp++ } ;' .LM- .NL) /\n"+
+"      ID                 \n"+
+"        .OUT('this.ctxpush(' 39 * 39 ') ;' .NL)\n"+
+"        .OUT('this.rule' * '() ;' .NL)\n"+
+"        .OUT('this.ctxpop() ;' .NL)\n"+
+"        .OUT('if (this.eflag) return ;' .NL)  /\n"+
+"      '(' TX1 ')'  ;\n"+
+"\n"+
+"[ character expressions ]            \n"+
+"CX1 = .OUT('this.pflag = ' .LM+ .NL)\n"+
+"      CX2 $('!' .OUT(' ||' .NL) CX2)\n"+
+"      .OUT(.LM- ' ;' .NL) ;\n"+
+"CX2 = CX3 (':' .OUT('((this.inbuf.charCodeAt(this.inp) >= ' * ') &&' .NL)\n"+
+"               CX3\n"+
+"               .OUT(' (this.inbuf.charCodeAt(this.inp) <= ' * ')  )' ) /\n"+
+"           .EMPTY .OUT('(this.inbuf.charCodeAt(this.inp) == ' * ') ' )  ) ;\n"+
+"CX3 = NUMBER / SQUOTE .LITCHR ;\n"+
+"\n"+
+"[ token definitions ]\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN ALPHA $(ALPHA/DIGIT) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN DIGIT $DIGIT .DELTOK ;\n"+
+"STRING : PREFIX .ANY(39) .TOKEN $.ANYBUT(13!10!39) .DELTOK .ANY(39) ;\n"+
+"ALPHA  : .ANY('A:'Z!'a:'z) ;\n"+
+"DIGIT  : .ANY('0:'9) ;\n"+
+"SQUOTE : PREFIX .ANY('') ;\n"+
+"CMLINE : .TOKEN $.ANYBUT(10!13!']) .DELTOK ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i02b. demo, AEXP2 backup assignment compiler" ;
+Input_text[Input_count] =
+".SYNTAX AEXP2\n"+
+"\n"+
+"AEXP2 = AS $AS ;\n"+
+"AS = ID .OUT(.TB 'address ' * .NL) ':=' RX1 .OUT(.TB 'store' .NL) ';' ;\n"+
+"RX1 = RX2 ['='  RX2 .OUT(.TB 'eq' .NL) |\n"+
+"           '<'  RX2 .OUT(.TB 'lt' .NL) |\n"+
+"           '>'  RX2 .OUT(.TB 'gt' .NL) |\n"+
+"           '<=' RX2 .OUT(.TB 'le' .NL) |\n"+
+"           '>=' RX2 .OUT(.TB 'ge' .NL) |\n"+
+"           .EMPTY] ;\n"+
+"RX2 = '~' EX0 .OUT(.TB 'not' .NL) / EX0 ;\n"+
+"EX0 = EX1 ('<-' EX1 .OUT(.TB 'shl' .NL) /\n"+
+"           '->' EX2 .OUT(.TB 'shr' .NL) /\n"+
+"           .EMPTY) ;\n"+
+"EX1 = EX2 $['+' EX2 .OUT(.TB 'add' .NL) |\n"+
+"            '-' EX2 .OUT(.TB 'sub' .NL) ] ;\n"+
+"EX2 = EX3 $('*' EX3 .OUT(.TB 'mpy' .NL) /\n"+
+"            '/' EX3 .OUT(.TB 'div' .NL) ) ;\n"+
+"EX3 = EX4 $('^' EX3 .OUT(.TB 'exp' .NL)) ;\n"+
+"EX4 = '+' EX5 / '-' EX5 .OUT(.TB 'minus' .NL) / EX5 ;\n"+
+"EX5 = ID  .OUT(.TB 'load ' * .NL) /\n"+
+"      NUMBER .OUT(.TB 'literal ' * .NL) /\n"+
+"      '(' EX0 ')' ;\n"+
+"\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN .ANY('A:'Z!'a:'z) $(.ANY('A:'Z!'a:'z) / .ANY('0:'9)) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN .ANY('0:'9) $.ANY('0:'9) .DELTOK ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i04a. Meta II syntax (i03 reordered and tokens)" ;
+Input_text[Input_count] =
+".SYNTAX PROGRAM\n"+
+"\n"+
+"PROGRAM = '.SYNTAX' ID .OUT(.LB .TB 'ADR ' * .NL)\n"+
+"          $ ST\n"+
+"          '.END' .OUT(.TB 'END' .NL) ;\n"+
+"\n"+
+"ST = ID .OUT(.LB * .NL) '=' EX1 '.,' .OUT(.TB 'R' .NL) ;\n"+
+"\n"+
+"EX1 = EX2 $('/' .OUT(.TB 'BT L' # .NL) EX2 )\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT(.TB 'BF L' # .NL) / OUTPUT)\n"+
+"      $(EX3 .OUT(.TB 'BE' .NL) / OUTPUT)\n"+
+"      .OUT(.LB 'L'# .NL) ;\n"+
+"\n"+
+"EX3 = ID        .OUT(.TB 'CLL '* .NL) /\n"+
+"      STRING    .OUT(.TB 'TST '* .NL) /\n"+
+"      '.ID'     .OUT(.TB 'ID' .NL)    /\n"+
+"      '.NUMBER' .OUT(.TB 'NUM' .NL)   /\n"+
+"      '.STRING' .OUT(.TB 'SR' .NL)    /\n"+
+"      '(' EX1 ')'             /\n"+
+"      '.EMPTY'  .OUT(.TB 'SET' .NL)   /\n"+
+"      '$' .OUT(.LB 'L'# .NL) EX3 .OUT(.TB 'BT L' # .NL) .OUT(.TB 'SET' .NL) ;\n"+
+"\n"+
+"OUTPUT = ('.OUT' '('$OUT1 ')' /\n"+
+"          '.LABEL' .OUT(.TB 'LB' .NL) OUT1)\n"+
+"         .OUT(.TB 'OUT' .NL) ;\n"+
+"\n"+
+"OUT1 = '*1'    .OUT(.TB 'GN1' .NL)  /\n"+
+"       '*2'    .OUT(.TB 'GN2' .NL)  /\n"+
+"       '*'     .OUT(.TB 'CI' .NL)   /\n"+
+"       STRING  .OUT(.TB 'CL '* .NL) ;\n"+
+"\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN ALPHA $(ALPHA/DIGIT) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN DIGIT $DIGIT .DELTOK ;\n"+
+"STRING : PREFIX .TOKEN .ANY(39) $.ANYBUT(13!10!39) .ANY(39) .DELTOK ;\n"+
+"ALPHA  : .ANY('A:'Z!'a:'z) ;\n"+
+"DIGIT  : .ANY('0:'9) ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+Input_menu[Input_count] = "i16. extract syntax to output" ;
+Input_text[Input_count] =
+".SYNTAX SYNTAX\n"+
+"[ strip compiler definition to syntax equations in standard form ]\n"+
+"[ accepts Meta II and modified syntax ]\n"+
+"[ James M. Neighbors ]\n"+
+"\n"+
+"[ body of compiler definition ]\n"+
+"SYNTAX = '.SYNTAX' ID .OUT(.LB '.SYNTAX ' * .NL .NL)\n"+
+"         $(PR / COMMENT)  \n"+
+"         ( '.TOKENS' .OUT(.LB '.TOKENS' .NL .NL)\n"+
+"                     $(TR / COMMENT) \n"+
+"                     .OUT(.NL) /\n"+
+"           .EMPTY )\n"+
+"         '.END' .OUT(.LB '.END' .NL) ;\n"+
+"\n"+
+"[ parsing rule definition ]\n"+
+"PR = ID '=' .OUT(.LB * ' = ' .LM+ ) \n"+
+"     EX1 \n"+
+"     (';' / '.,') \n"+
+"     .OUT(.LM- ';' .NL .NL); \n"+
+"\n"+
+"[ token rule definition ]\n"+
+"TR = ID ':' .OUT(.LB * ' : ' .LM+ ) TX1 ';' .OUT(.LM- ';' .NL ) ; \n"+
+"\n"+
+"[ comment definition ]\n"+
+"COMMENT = '[' CMLINE ']' ;\n"+
+"\n"+
+"[ parsing expressions ]\n"+
+"EX1 = EX2 $('/' .OUT('/ ') EX2 ) ;\n"+
+"\n"+
+"EX2 = (EX3 .OUT(' ') / OUTPUT) $(EX3 .OUT(' ') / OUTPUT) ;\n"+
+"\n"+
+"EX3 = ID        .OUT(*)         /\n"+
+"      STRING    .OUT(39 * 39)   /\n"+
+"      '(' .OUT(.LM+ '( ') \n"+
+"          EX1 \n"+
+"      ')' .OUT(.LM- ')')        /\n"+
+"      '.EMPTY'  .OUT('.EMPTY')  /\n"+
+"      '.LITCHR' .OUT('.LITCHR') /\n"+
+"      '$' .OUT('$') EX3         /\n"+
+"      '.ID'     .OUT('.ID')     /\n"+
+"      '.NUMBER' .OUT('.NUMBER') /\n"+
+"      '.STRING' .OUT('.STRING') /\n"+
+"      '[' .OUT('[ ')\n"+
+"          EX1 $('|' .OUT('| ') EX1)\n"+
+"      ']' .OUT(']') ;\n"+
+"\n"+
+"[ output expressions ]\n"+
+"OUTPUT = '.OUT' '('$OUT1 ')' / '.LABEL' OUT1 ;\n"+
+"\n"+
+"OUT1 = '*1'    /\n"+
+"       '*2'    /\n"+
+"       '*'     /\n"+
+"       STRING  /\n"+
+"       NUMBER  /\n"+
+"       '#'     /\n"+
+"       '.NL'   /\n"+
+"       '.LB'   /\n"+
+"       '.TB'   /\n"+
+"       '.LM+'  /\n"+
+"       '.LM-'  ;\n"+
+"\n"+
+"[ token expressions ]\n"+
+"TX1 = TX2 $('/' .OUT('/ ') TX2) ; \n"+
+"\n"+
+"TX2 = TX3 .OUT(' ') $(TX3 .OUT(' ')) ;\n"+
+"\n"+
+"TX3 = '.TOKEN'         .OUT('.TOKEN') /\n"+
+"      '.DELTOK'        .OUT('.DELTOK') /\n"+
+"      '$' .OUT('$') TX3  /\n"+
+"      '.ANYBUT(' .OUT('.ANYBUT(')\n"+
+"          CX1 \n"+
+"          ')' .OUT(')')     /\n"+
+"      '.ANY(' .OUT('.ANY(')\n"+
+"          CX1 \n"+
+"          ')' .OUT(')')     /\n"+
+"      ID      .OUT(*)       /\n"+
+"      '(' .OUT('(') \n"+
+"          TX1 \n"+
+"      ')' .OUT(')')         ;\n"+
+"\n"+
+"[ character expressions ]            \n"+
+"CX1 = CX2 $('!' .OUT('!') CX2) ;\n"+
+"CX2 = CX3 (':' .OUT(':') CX3 /\n"+
+"           .EMPTY            ) ;\n"+
+"CX3 = NUMBER .OUT(*) / SQUOTE .LITCHR .OUT(*) ;\n"+
+"\n"+
+"[ token definitions ]\n"+
+".TOKENS\n"+
+"\n"+
+"PREFIX : $.ANY(32!9!13!10) ;\n"+
+"ID     : PREFIX .TOKEN ALPHA $(ALPHA/DIGIT) .DELTOK ;\n"+
+"NUMBER : PREFIX .TOKEN DIGIT $DIGIT .DELTOK ;\n"+
+"STRING : PREFIX .ANY(39) .TOKEN $.ANYBUT(13!10!39) .DELTOK .ANY(39) ;\n"+
+"ALPHA  : .ANY('A:'Z!'a:'z) ;\n"+
+"DIGIT  : .ANY('0:'9) ;\n"+
+"SQUOTE : PREFIX .ANY('') ;\n"+
+"CMLINE : .TOKEN $.ANYBUT(10!13!']) .DELTOK ;\n"+
+"\n"+
+".END\n";
+
+Input_count++ ;
+/* select Input */
+function InputSelect() {
+  document.InputForm.InputText.value =
+    Input_text[document.InputForm.InputSel.selectedIndex] ;
+};
+
+/* build Input form */
+document.write('<FORM NAME="InputForm" action="none">'+'\n');
+document.write('<B>Input:<\/B>'+'\n');
+document.write('<SELECT name="InputSel" onChange="InputSelect();">'+'\n');
+
+/* Input menu options */
+for (var temp = 0 ; temp < Input_count ; temp++)
+  document.write('<OPTION VALUE="'+temp+'">'+Input_menu[temp]+'\n');
+
+document.write('<\/SELECT>'+'\n');
+document.write('<TEXTAREA NAME="InputText" COLS=80 ROWS=2000>'+'\n');
+document.write('Input text shows here.'+'\n');
+document.write('<\/TEXTAREA>'+'\n');
+document.write('<\/FORM>'+'\n');
+
+</SCRIPT>
+</BODY>
+</HTML>
