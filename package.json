@@ -1,0 +1,14 @@
+{
+  "name": "meta-ii",
+  "version": "1.0.0",
+  "description": "",
+  "main": "meta2.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "tape": "^4.10.1"
+  }
+}
