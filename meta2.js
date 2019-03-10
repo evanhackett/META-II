@@ -106,6 +106,8 @@ function runADR (state) {
   state.stack[state.stackframe * state.stackframesize + 3] = state.symbolarg // rule name called for error messages
   state.stack[state.stackframe * state.stackframesize + 4] = state.margin    // left margin (extended only)
   findlabel(state.symbolarg, state)
+
+  return state
 }
 
 function runCLL (state) {
@@ -117,6 +119,7 @@ function runCLL (state) {
   state.stack[state.stackframe * state.stackframesize + 3] = state.symbolarg // rule name called for error messages
   state.stack[state.stackframe * state.stackframesize + 4] = state.margin    // left margin (needed on backtrack)
   findlabel(state.symbolarg, state)
+  return state
 }
 
 function runEND (state) {
@@ -141,14 +144,17 @@ function runSET (state) {
 
 function runB (state) {
   findlabel(state.symbolarg, state)
+  return state
 }
 
 function runBT (state) {
   if (state.flag) findlabel(state.symbolarg, state)
+  return state
 }
 
 function runBF (state) {
   if (! state.flag) findlabel(state.symbolarg, state)
+  return state
 }
 
 function runBE (state) {
@@ -263,16 +269,19 @@ function runextLMD (state) {
 // CE  - compare input char to code for equal
 function runextCE (s, state) {
   state.flag = (state.inbuf.charCodeAt(state.inp) == s)
+  return state
 }
 
 // CGE - compare input char to code for greater or equal
 function runextCGE (s, state) {
   state.flag = (state.inbuf.charCodeAt(state.inp) >= s)
+  return state
 }
 
 // CLE - compare input char to code for less or equal
 function runextCLE (s, state) {
   state.flag = (state.inbuf.charCodeAt(state.inp) <= s)
+  return state
 }
 
 // LCH - literal char code to token buffer (extended only)
@@ -311,6 +320,7 @@ function runextSCN (state) {
 // CC - copy char code to output
 function runextCC (s, state) {
   state.outstr = state.outstr + String.fromCharCode(s);
+  return state
 }
 
 function argstring (state) {
@@ -329,19 +339,21 @@ function argstring (state) {
 
 function argsymbol (state) {
   // reset symbol
-  state.symbolarg = ''
+  let symbolarg = ''
+  let pc = state.pc
   // skip over the operator (not tab and not blank)
-  while ((state.ic.charAt(state.pc) != ' ') && (state.ic.charAt(state.pc) != '\t')) state.pc++
+  while ((state.ic.charAt(pc) != ' ') && (state.ic.charAt(pc) != '\t')) pc++
   // skip over tabs or blanks
-  while ((state.ic.charAt(state.pc) == ' ') || (state.ic.charAt(state.pc) == '\t')) state.pc++
+  while ((state.ic.charAt(pc) == ' ') || (state.ic.charAt(pc) == '\t')) pc++
   // accrete symbol of alpha and numeral
-  while ( ((state.ic.charAt(state.pc) >= 'A') && (state.ic.charAt(state.pc) <= 'Z')) ||
-          ((state.ic.charAt(state.pc) >= 'a') && (state.ic.charAt(state.pc) <= 'z')) ||
-          ((state.ic.charAt(state.pc) >= '0') && (state.ic.charAt(state.pc) <= '9'))
+  while ( ((state.ic.charAt(pc) >= 'A') && (state.ic.charAt(pc) <= 'Z')) ||
+          ((state.ic.charAt(pc) >= 'a') && (state.ic.charAt(pc) <= 'z')) ||
+          ((state.ic.charAt(pc) >= '0') && (state.ic.charAt(pc) <= '9'))
         ) {
-    state.symbolarg = state.symbolarg + state.ic.charAt(state.pc)
-    state.pc++
+    symbolarg += state.ic.charAt(pc)
+    pc++
   }
+  return {symbolarg, pc}
 }
 
 function interpretOp (state) {
@@ -363,12 +375,12 @@ function interpretOp (state) {
   // intrepreter op case branch
   switch (op) {
     // original META II order codes
-    case 'ADR': argsymbol(state) ; runADR(state) ; break ;          // ADR - specify starting rule
-    case 'B':   argsymbol(state) ; runB(state) ; break ;            // B   - unconditional branch to label
-    case 'BT':  argsymbol(state) ; runBT(state) ; break ;           // BT  - branch if switch true to label
-    case 'BF':  argsymbol(state) ; runBF(state) ; break ;           // BF  - branch if switch false to label
+    case 'ADR': return runADR(updateState(state, argsymbol(state)))          // ADR - specify starting rule
+    case 'B':   return runB(updateState(state, argsymbol(state)))            // B   - unconditional branch to label
+    case 'BT':  return runBT(updateState(state, argsymbol(state)))           // BT  - branch if switch true to label
+    case 'BF':  return runBF(updateState(state, argsymbol(state)))           // BF  - branch if switch false to label
     case 'BE':  runBE(state) ; break ;                         // BE  - branch if switch false to error halt
-    case 'CLL': argsymbol(state) ; runCLL(state) ; break ;          // CLL - call rule at label
+    case 'CLL': return runCLL(updateState(state, argsymbol(state)))          // CLL - call rule at label
     case 'CL':  argstring(state) ; runCL(state.stringarg, state) ; break ;  // CL  - copy given string argument to output
     case 'CI':  runCI(state) ; break ;                         // CI  - copy scanned token to output
     case 'END': runEND(state) ; break ;                        // END - pseudo op, end of source
@@ -389,9 +401,9 @@ function interpretOp (state) {
     case 'NL':  runextNL(state) ; break ;                      // NL  - new line output
     case 'TB':  runextTB(state) ; break ;                      // TB  - output a tab
     // extensions to provide token definition
-    case 'CE':  argsymbol(state) ; runextCE(state.symbolarg) ; break ;        // CE  - compare input char to code for equal
-    case 'CGE': argsymbol(state) ; runextCGE(state.symbolarg) ; break ;       // CGE - compare input char to code for greater or equal
-    case 'CLE': argsymbol(state) ; runextCLE(state.symbolarg) ; break ;       // CLE - compare input char to code for less or equal
+    case 'CE':  return runextCE(updateState(state, argsymbol(state)).symbolarg)        // CE  - compare input char to code for equal
+    case 'CGE': return runextCGE(updateState(state, argsymbol(state)).symbolarg)       // CGE - compare input char to code for greater or equal
+    case 'CLE': return runextCLE(updateState(state, argsymbol(state)).symbolarg)       // CLE - compare input char to code for less or equal
     case 'LCH': runextLCH(state) ; break ;                     // LCH - literal character code to token as string
     case 'NOT': runextNOT(state) ; break ;                     // NOT - complement flag
     case 'RF':  if (!state.flag) runR(state) ; break ;               // RF  - return if switch false
@@ -401,10 +413,11 @@ function interpretOp (state) {
     // extensions for backtracking, error handling, and char code output
     case 'PFF': state.flag = false ; break ;                    // PFF - parse flag set to false
     case 'PFT': state.flag = true ; break ;                     // PFT - parse flag set to true (AKA SET)
-    case 'CC':  argsymbol(state) ; runextCC(state.symbolarg) ; break ;        // CC - copy char code to output
+    case 'CC':  return runextCC(updateState(state, argsymbol(state)).symbolarg)        // CC - copy char code to output
     default:
         console.error('ERROR: unknown interpret op \''+op+'\'')
         state.exitlevel = true
+        return state
   }
 
   return state
@@ -425,13 +438,11 @@ function interpret (state) {
       state = updateState(state, {pc: state.pc + 1})
     }
     state = updateState(state, {pc: state.pc + 1})
-    state = interpretOp(state)
 
-    // TODO: the above could look like this:
-    //    state = updateState(state, interpretOp(state))
-    // which would mean interpretOp returns only the state delta.
+    // interpretOp only needs to return the state delta (not the complete state)
     // this means each op should be refactored to return a delta.
     // state updates would then only need to happen in this one function.
+    state = updateState(state, interpretOp(state))
 
     if (state.exitlevel) return state
   }
