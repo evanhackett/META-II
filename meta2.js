@@ -421,7 +421,7 @@ function interpret (state) {
 // initialize and start interpreter
 // src_input is the source code to be compiled,
 // interpreter_input is the code to be used as the interpreter of the source code
-function StartIntCompile(src_input, interpreter_input) {
+function compile(src_input, interpreter_input) {
   const state = {
     pc: 0,                 // program counter into the interpreter text
     ic: interpreter_input, // interpreter text
@@ -446,4 +446,4 @@ function StartIntCompile(src_input, interpreter_input) {
   return state.outbuf
 }
 
-module.exports = StartIntCompile
+module.exports = compile
