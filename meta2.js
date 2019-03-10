@@ -408,13 +408,24 @@ function interpretOp (state) {
   }
 }
 
+// takes in a state and a state delta, which describes what parts of the state
+// to update, and returns a new state object that has the updates.
+function updateState(state, delta) {
+  const deepCopyOfState = JSON.parse(JSON.stringify(state))
+  return Object.assign(deepCopyOfState, delta)
+}
+
 function interpret (state) {
   while (true) {
     // skip to the next operator which is prefaced by a '\t'
-    while (state.ic.charAt(state.pc) != '\t') state.pc++ ;
-    state.pc++
+    while (state.ic.charAt(state.pc) != '\t') {
+      state = updateState(state, {pc: state.pc + 1})
+    }
+
+    state = updateState(state, {pc: state.pc + 1})
+
     interpretOp(state)
-    if (state.exitlevel) return
+    if (state.exitlevel) return state
   }
 }
 
@@ -442,8 +453,10 @@ function compile(src_input, interpreter_input) {
     tokenflag: null,       // collecting token characters
   }
 
-  interpret(state)
-  return state.outbuf
+  return interpret(state).outbuf
 }
 
-module.exports = compile
+module.exports = {
+  compile,
+  updateState,
+}
