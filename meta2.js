@@ -363,53 +363,56 @@ function interpretOp (state) {
   // intrepreter op case branch
   switch (op) {
     // original META II order codes
-    case 'ADR': argsymbol(state) ; runADR(state) ; return ;          // ADR - specify starting rule
-    case 'B':   argsymbol(state) ; runB(state) ; return ;            // B   - unconditional branch to label
-    case 'BT':  argsymbol(state) ; runBT(state) ; return ;           // BT  - branch if switch true to label
-    case 'BF':  argsymbol(state) ; runBF(state) ; return ;           // BF  - branch if switch false to label
-    case 'BE':  runBE(state) ; return ;                         // BE  - branch if switch false to error halt
-    case 'CLL': argsymbol(state) ; runCLL(state) ; return ;          // CLL - call rule at label
-    case 'CL':  argstring(state) ; runCL(state.stringarg, state) ; return ;  // CL  - copy given string argument to output
-    case 'CI':  runCI(state) ; return ;                         // CI  - copy scanned token to output
-    case 'END': runEND(state) ; return ;                        // END - pseudo op, end of source
-    case 'GN1': runGN1(state) ; return ;                        // GN1 - make and output label 1
-    case 'GN2': runGN2(state) ; return ;                        // GN2 - make and output label 2
-    case 'ID':  runID(state) ; return ;                         // ID  - recognize identifier token
-    case 'LB':  runLB(state) ; return ;                         // LB  - start output in label field
-    case 'NUM': runNUM(state) ; return ;                        // NUM - recognize number token
-    case 'OUT': runOUT(state) ; return ;                        // OUT - output out buffer with new line
-    case 'R':   runR(state) ; return ;                          // R   - return from rule call with CLL
-    case 'SET': runSET(state) ; return ;                        // SET - set switch true
-    case 'SR':  runSR(state) ; return ;                         // SR  - recognize string token including single quotes
-    case 'TST': argstring(state) ; runTST(state.stringarg, state) ; return ; // TST - test for given string argument, if found set switch
+    case 'ADR': argsymbol(state) ; runADR(state) ; break ;          // ADR - specify starting rule
+    case 'B':   argsymbol(state) ; runB(state) ; break ;            // B   - unconditional branch to label
+    case 'BT':  argsymbol(state) ; runBT(state) ; break ;           // BT  - branch if switch true to label
+    case 'BF':  argsymbol(state) ; runBF(state) ; break ;           // BF  - branch if switch false to label
+    case 'BE':  runBE(state) ; break ;                         // BE  - branch if switch false to error halt
+    case 'CLL': argsymbol(state) ; runCLL(state) ; break ;          // CLL - call rule at label
+    case 'CL':  argstring(state) ; runCL(state.stringarg, state) ; break ;  // CL  - copy given string argument to output
+    case 'CI':  runCI(state) ; break ;                         // CI  - copy scanned token to output
+    case 'END': runEND(state) ; break ;                        // END - pseudo op, end of source
+    case 'GN1': runGN1(state) ; break ;                        // GN1 - make and output label 1
+    case 'GN2': runGN2(state) ; break ;                        // GN2 - make and output label 2
+    case 'ID':  runID(state) ; break ;                         // ID  - recognize identifier token
+    case 'LB':  runLB(state) ; break ;                         // LB  - start output in label field
+    case 'NUM': runNUM(state) ; break ;                        // NUM - recognize number token
+    case 'OUT': runOUT(state) ; break ;                        // OUT - output out buffer with new line
+    case 'R':   runR(state) ; break ;                          // R   - return from rule call with CLL
+    case 'SET': runSET(state) ; break ;                        // SET - set switch true
+    case 'SR':  runSR(state) ; break ;                         // SR  - recognize string token including single quotes
+    case 'TST': argstring(state) ; runTST(state.stringarg, state) ; break ; // TST - test for given string argument, if found set switch
     // extensions to provide label and nested output definition
-    case 'GN':  runextGN(state) ; return ;                      // GN  - make and output unique number
-    case 'LMI': runextLMI(state) ; return ;                     // LMI - left margin increase
-    case 'LMD': runextLMD(state) ; return ;                     // LMD - left margin decrease
-    case 'NL':  runextNL(state) ; return ;                      // NL  - new line output
-    case 'TB':  runextTB(state) ; return ;                      // TB  - output a tab
+    case 'GN':  runextGN(state) ; break ;                      // GN  - make and output unique number
+    case 'LMI': runextLMI(state) ; break ;                     // LMI - left margin increase
+    case 'LMD': runextLMD(state) ; break ;                     // LMD - left margin decrease
+    case 'NL':  runextNL(state) ; break ;                      // NL  - new line output
+    case 'TB':  runextTB(state) ; break ;                      // TB  - output a tab
     // extensions to provide token definition
-    case 'CE':  argsymbol(state) ; runextCE(state.symbolarg) ; return ;        // CE  - compare input char to code for equal
-    case 'CGE': argsymbol(state) ; runextCGE(state.symbolarg) ; return ;       // CGE - compare input char to code for greater or equal
-    case 'CLE': argsymbol(state) ; runextCLE(state.symbolarg) ; return ;       // CLE - compare input char to code for less or equal
-    case 'LCH': runextLCH(state) ; return ;                     // LCH - literal character code to token as string
-    case 'NOT': runextNOT(state) ; return ;                     // NOT - complement flag
-    case 'RF':  if (!state.flag) runR(state) ; return ;               // RF  - return if switch false
-    case 'SCN': runextSCN(state) ; return ;                     // SCN - if flag, scan input character; if token flag, add to token
-    case 'TFF': runextTFF(state) ; return ;                     // TFF - token flag set to false
-    case 'TFT': runextTFT(state) ; return ;                     // TFT - token flag set to true
+    case 'CE':  argsymbol(state) ; runextCE(state.symbolarg) ; break ;        // CE  - compare input char to code for equal
+    case 'CGE': argsymbol(state) ; runextCGE(state.symbolarg) ; break ;       // CGE - compare input char to code for greater or equal
+    case 'CLE': argsymbol(state) ; runextCLE(state.symbolarg) ; break ;       // CLE - compare input char to code for less or equal
+    case 'LCH': runextLCH(state) ; break ;                     // LCH - literal character code to token as string
+    case 'NOT': runextNOT(state) ; break ;                     // NOT - complement flag
+    case 'RF':  if (!state.flag) runR(state) ; break ;               // RF  - return if switch false
+    case 'SCN': runextSCN(state) ; break ;                     // SCN - if flag, scan input character; if token flag, add to token
+    case 'TFF': runextTFF(state) ; break ;                     // TFF - token flag set to false
+    case 'TFT': runextTFT(state) ; break ;                     // TFT - token flag set to true
     // extensions for backtracking, error handling, and char code output
-    case 'PFF': state.flag = false ; return ;                    // PFF - parse flag set to false
-    case 'PFT': state.flag = true ; return ;                     // PFT - parse flag set to true (AKA SET)
-    case 'CC':  argsymbol(state) ; runextCC(state.symbolarg) ; return ;        // CC - copy char code to output
+    case 'PFF': state.flag = false ; break ;                    // PFF - parse flag set to false
+    case 'PFT': state.flag = true ; break ;                     // PFT - parse flag set to true (AKA SET)
+    case 'CC':  argsymbol(state) ; runextCC(state.symbolarg) ; break ;        // CC - copy char code to output
     default:
         console.error('ERROR: unknown interpret op \''+op+'\'')
         state.exitlevel = true
   }
+
+  return state
 }
 
 // takes in a state and a state delta, which describes what parts of the state
 // to update, and returns a new state object that has the updates.
+// Maybe want to use immutablejs. This looks similar to "merge": https://immutable-js.github.io/immutable-js/docs/#/merge
 function updateState(state, delta) {
   const deepCopyOfState = JSON.parse(JSON.stringify(state))
   return Object.assign(deepCopyOfState, delta)
@@ -421,10 +424,15 @@ function interpret (state) {
     while (state.ic.charAt(state.pc) != '\t') {
       state = updateState(state, {pc: state.pc + 1})
     }
-
     state = updateState(state, {pc: state.pc + 1})
+    state = interpretOp(state)
 
-    interpretOp(state)
+    // TODO: the above could look like this:
+    //    state = updateState(state, interpretOp(state))
+    // which would mean interpretOp returns only the state delta.
+    // this means each op should be refactored to return a delta.
+    // state updates would then only need to happen in this one function.
+
     if (state.exitlevel) return state
   }
 }
