@@ -1,5 +1,4 @@
-module.exports =
-`.SYNTAX PROGRAM
+.SYNTAX PROGRAM
 
 OUT1 = '*1' .OUT('GN1') / '*2' .OUT('GN2') /
 '*' .OUT('CI') / .STRING .OUT('CL '*).,
@@ -29,4 +28,3 @@ PROGRAM = '.SYNTAX' .ID .OUT('ADR ' *)
 $ ST '.END' .OUT('END').,
 
 .END
-`

@@ -1,0 +1,20 @@
+	address fern
+	literal 5
+	literal 6
+	add
+	store
+	address ace
+	load fern
+	literal 5
+	mpy
+	store
+	address waldo
+	load fern
+	load alpha
+	load beta
+	minus
+	load gamma
+	exp
+	div
+	add
+	store

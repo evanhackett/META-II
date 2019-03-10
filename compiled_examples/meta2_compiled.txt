@@ -1,5 +1,4 @@
-module.exports =
-`	ADR PROGRAM
+	ADR PROGRAM
 OUT1
 	TST '*1'
 	BF L1
@@ -210,4 +209,3 @@ L37
 L39
 	R
 	END
-`
