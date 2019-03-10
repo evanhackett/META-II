@@ -152,22 +152,21 @@ function runBF (state) {
 }
 
 function runBE (state) {
-var i, j, h, msg, ctx;
   // only halt if there is an error
   if (state.flag) return
   // provide error context
-  msg = 'SYNTAX ERROR:\n' +
+  let msg = 'SYNTAX ERROR:\n' +
         'rule:' + state.stack[state.stackframe * state.stackframesize + 3] + '\n' +
         'last token:' + state.token + '\n' +
         'out string:' + state.outstr + '\n' +
         'INPUT:' + '\n'
   // provide scan context
-  i = state.inp - 20 ;  if (i < 0) i = 0
-  j = state.inp + 20 ;  if (j > state.inbuf.length) j = state.inbuf.length
-  ctx = state.inbuf.substring(i, state.inp) + '<scan>' + state.inbuf.substring(state.inp, j)
+  let i = state.inp - 20 ;  if (i < 0) i = 0
+  let j = state.inp + 20 ;  if (j > state.inbuf.length) j = state.inbuf.length
+  const ctx = state.inbuf.substring(i, state.inp) + '<scan>' + state.inbuf.substring(state.inp, j)
   msg += ctx + '\n\n' + 'CHAR CODES:\n'
   // ensure all character codes are visible
-  for (var h = 0 ; h < ctx.length ; h++) {
+  for (let h = 0 ; h < ctx.length ; h++) {
     if (ctx.charCodeAt(h) <= 32) {
       msg += '<' + ctx.charCodeAt(h) + '>'
     } else {
@@ -217,10 +216,9 @@ function runOUT (state) {
 
 // out - if necessary move to margin before output of s
 function out(s, state) {
-  var col;
   if ((state.margin > 0) && (state.outstr.length == 0)) {
     // advance to left margin
-    col = 0
+    let col = 0
     while (col < state.margin) { state.outstr = state.outstr + ' '; col++ };
   }
   // output given string
