@@ -152,11 +152,11 @@ function runR (state) {
   // interpretation completed on return on empty stack
   if (state.stackframe == 0) return runEND(state)
   // get return pc from stackframe and pop stack
-  state.pc = state.stack[state.stackframe * state.stackframesize + 2] // return pc
-  state.margin = state.stack[state.stackframe * state.stackframesize + 4]
-  // pop stackframe
-  state.stackframe--
-  return state
+  return {
+    pc: state.stack[state.stackframe * state.stackframesize + 2], // return pc
+    margin: state.stack[state.stackframe * state.stackframesize + 4],
+    stackframe: state.stackframe - 1 // pop stackframe
+  }
 }
 
 function runSET (state) {
