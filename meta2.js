@@ -1,10 +1,12 @@
 // remove whitespace (space, newline, return, tab)
+// returns updated inp
 function removeWhitespace (state) {
   const isWhiteSpace = c => c == ' '|| c == '\n' || c == '\r' || c == '\t'
-
-  while (isWhiteSpace(state.inbuf.charAt(state.inp))) {
-    state.inp++
+  let inp = state.inp
+  while (isWhiteSpace(state.inbuf.charAt(inp))) {
+    inp++
   }
+  return inp
 }
 
 function findlabel(s, state) {
@@ -21,81 +23,85 @@ function findlabel(s, state) {
   }
 }
 
-
 function runTST(s, state) {
-  removeWhitespace(state)
+  let inp = removeWhitespace(state)
 
   // test string case insensitive
-  state.flag = true
+  let flag = true
   let i = 0
-  while (state.flag && (i < s.length) ) {
-    state.flag = (s.charAt(i).toUpperCase() == state.inbuf.charAt(state.inp+i).toUpperCase())
+  while (flag && (i < s.length) ) {
+    flag = (s.charAt(i).toUpperCase() == state.inbuf.charAt(inp+i).toUpperCase())
     i++
   }
   // advance input if found
-  if (state.flag) state.inp = state.inp + s.length
-  return state
+  if (flag) inp += s.length
+  return { flag, inp }
 }
 
 function runID (state) {
-  removeWhitespace(state)
+  let inp = removeWhitespace(state)
+  let flag = state.flag
+  let token = ''
 
   // accept upper alpha or lower alpha
-  state.flag = ( ((state.inbuf.charAt(state.inp) >= 'A') && (state.inbuf.charAt(state.inp) <= 'Z')) ||
-           ((state.inbuf.charAt(state.inp) >= 'a') && (state.inbuf.charAt(state.inp) <= 'z')) )
-  if (state.flag) {
-    state.token = ''
-    while (state.flag) {
+  flag = ( ((state.inbuf.charAt(inp) >= 'A') && (state.inbuf.charAt(inp) <= 'Z')) ||
+           ((state.inbuf.charAt(inp) >= 'a') && (state.inbuf.charAt(inp) <= 'z')) )
+  if (flag) {
+    while (flag) {
       // add to token
-      state.token = state.token + state.inbuf.charAt(state.inp)
-      state.inp++
+      token += state.inbuf.charAt(inp)
+      inp++
       // accept upper alpha or lower alpha or numeral
-      state.flag = ( ((state.inbuf.charAt(state.inp) >= 'A') && (state.inbuf.charAt(state.inp) <= 'Z')) ||
-               ((state.inbuf.charAt(state.inp) >= 'a') && (state.inbuf.charAt(state.inp) <= 'z')) ||
-               ((state.inbuf.charAt(state.inp) >= '0') && (state.inbuf.charAt(state.inp) <= '9')) )
+      flag = ( ((state.inbuf.charAt(inp) >= 'A') && (state.inbuf.charAt(inp) <= 'Z')) ||
+               ((state.inbuf.charAt(inp) >= 'a') && (state.inbuf.charAt(inp) <= 'z')) ||
+               ((state.inbuf.charAt(inp) >= '0') && (state.inbuf.charAt(inp) <= '9')) )
     }
-    state.flag = true
+    flag = true
   }
-  return state
+  return { inp, flag, token }
 }
 
 function runNUM (state) {
-  removeWhitespace(state)
+  let inp = removeWhitespace(state)
+  let flag = state.flag
+  let token = ''
+
   // accept a numeral
-  state.flag = ((state.inbuf.charAt(state.inp) >= '0') && (state.inbuf.charAt(state.inp) <= '9'))
-  if (state.flag) {
-    state.token = ''
-    while (state.flag) {
+  flag = ((state.inbuf.charAt(inp) >= '0') && (state.inbuf.charAt(inp) <= '9'))
+  if (flag) {
+    while (flag) {
       // add to token
-      state.token = state.token + state.inbuf.charAt(state.inp)
-      state.inp++
+      token += state.inbuf.charAt(inp)
+      inp++
       // accept numerals
-      state.flag = ((state.inbuf.charAt(state.inp) >= '0') && (state.inbuf.charAt(state.inp) <= '9'))
+      flag = ((state.inbuf.charAt(inp) >= '0') && (state.inbuf.charAt(inp) <= '9'))
     }
-    state.flag = true
+    flag = true
   }
-  return state
+  return { inp, flag, token }
 }
 
 function runSR (state) {
-  removeWhitespace(state)
+  let inp = removeWhitespace(state)
+  let flag = state.flag
+  let token = ''
+
   // accept a single quote
-  state.flag = (state.inbuf.charAt(state.inp) == '\'')
-  if (state.flag) {
-    state.token = ''
-    while (state.flag) {
+  flag = (state.inbuf.charAt(inp) == '\'')
+  if (flag) {
+    while (flag) {
       // add to token
-      state.token = state.token + state.inbuf.charAt(state.inp)
-      state.inp++
+      token += state.inbuf.charAt(inp)
+      inp++
       // accept anything but a single quote
-      state.flag = (state.inbuf.charAt(state.inp) != '\'')
+      flag = (state.inbuf.charAt(inp) != '\'')
     }
     // skip teminating single quote
-    state.token = state.token + '\''
-    state.inp++
-    state.flag = true
+    token = token + '\''
+    inp++
+    flag = true
   }
-  return state
+  return { inp, flag, token }
 }
 
 function runADR (state) {
@@ -459,10 +465,10 @@ function updateState(state, delta) {
 function interpret (state) {
   while (true) {
     // skip to the next operator which is prefaced by a '\t'
-    while (state.ic.charAt(state.pc) != '\t') {
-      state = updateState(state, {pc: state.pc + 1})
-    }
-    state = updateState(state, {pc: state.pc + 1})
+    let pc = state.pc
+    while (state.ic.charAt(pc) != '\t') { pc++ }
+    pc++
+    state = updateState(state, { pc })
 
     // interpretOp only needs to return the state delta (not the complete state)
     // this means each op should be refactored to return a delta.
