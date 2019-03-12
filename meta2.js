@@ -177,7 +177,7 @@ function runBF (state) {
 
 function runBE (state) {
   // only halt if there is an error
-  if (state.flag) return
+  if (state.flag) return {}
   // provide error context
   let msg = 'SYNTAX ERROR:\n' +
         'rule:' + state.stack[state.stackframe * state.stackframesize + 3] + '\n' +
@@ -200,9 +200,7 @@ function runBE (state) {
   msg += '\n'
 
   console.error(msg)
-  state.exitlevel = true
-
-  return state
+  return { exitlevel: true }
 }
 
 function runCL (s, state) {
@@ -448,12 +446,12 @@ function interpretOp (state) {
     case 'TFF': return runextTFF(state)                     // TFF - token flag set to false
     case 'TFT': return runextTFT(state)                     // TFT - token flag set to true
     // extensions for backtracking, error handling, and char code output
-    case 'PFF': return {flag: false}                    // PFF - parse flag set to false
-    case 'PFT': return {flag: true}                     // PFT - parse flag set to true (AKA SET)
+    case 'PFF': return { flag: false }                    // PFF - parse flag set to false
+    case 'PFT': return { flag: true }                     // PFT - parse flag set to true (AKA SET)
     case 'CC':  return runextCC(updateState(state, argsymbol(state)).symbolarg)        // CC - copy char code to output
     default:
         console.error('ERROR: unknown interpret op \''+op+'\'')
-        return {exitlevel: true}
+        return { exitlevel: true }
   }
 
   return state
