@@ -168,11 +168,11 @@ function runB (state) {
 }
 
 function runBT (state) {
-  return state.flag ? findlabel(state.symbolarg, state) : state
+  return state.flag ? findlabel(state.symbolarg, state) : {}
 }
 
 function runBF (state) {
-  return !state.flag ? findlabel(state.symbolarg, state) : state
+  return !state.flag ? findlabel(state.symbolarg, state) : {}
 }
 
 function runBE (state) {
@@ -232,14 +232,14 @@ function runGN2 (state) {
 }
 
 function runLB (state) {
-  state.outstr = ''
-  return state
+  return { outstr: '' }
 }
 
 function runOUT (state) {
-  state.outbuf += state.outstr + '\n'
-  state.outstr = '\t'
-  return state
+  return {
+    outbuf: state.outbuf + state.outstr + '\n',
+    outstr: '\t'
+  }
 }
 
 // extended runtime order codes not in original Meta II paper
@@ -260,9 +260,10 @@ function out(s, state) {
 // NL - generate newline (extended only, compare with runOUT)
 function runextNL (state) {
   // output current line
-  state.outbuf += state.outstr + '\n'
-  state.outstr = ''
-  return state
+  return {
+    outbuf: state.outbuf + state.outstr + '\n',
+    outstr: ''
+  }
 }
 
 // TB - add a tab to the output
@@ -283,59 +284,55 @@ function runextGN (state) {
 
 // LMI - increase left margin (extended only)
 function runextLMI (state) {
-  return {margin: state.margin + 2}
+  return { margin: state.margin + 2 }
 }
 
 // LMD - decrease left margin (extended only)
 function runextLMD (state) {
-  return {margin: state.margin - 2}
+  return { margin: state.margin - 2 }
 }
 
 // extensions to provide token definition
 
 // CE  - compare input char to code for equal
 function runextCE (s, state) {
-  state.flag = (state.inbuf.charCodeAt(state.inp) == s)
-  return state
+  return { flag: (state.inbuf.charCodeAt(state.inp) == s) }
 }
 
 // CGE - compare input char to code for greater or equal
 function runextCGE (s, state) {
-  state.flag = (state.inbuf.charCodeAt(state.inp) >= s)
-  return state
+  return { flag: (state.inbuf.charCodeAt(state.inp) >= s) }
 }
 
 // CLE - compare input char to code for less or equal
 function runextCLE (s, state) {
-  state.flag = (state.inbuf.charCodeAt(state.inp) <= s)
-  return state
+  return { flag: (state.inbuf.charCodeAt(state.inp) <= s) }
 }
 
 // LCH - literal char code to token buffer (extended only)
 function runextLCH (state) {
-  state.token = state.inbuf.charCodeAt(state.inp)
-  // scan the character
-  state.inp++
-  return state
+  return {
+    token: state.inbuf.charCodeAt(state.inp),
+    inp: state.inp + 1 // scan the character
+  }
 }
 
 // NOT - invert parse flag
 function runextNOT (state) {
-  state.flag = !state.flag
-  return state
+  return { flag: !state.flag }
 }
 
 // TFT - set token flag true and clear token
 function runextTFT (state) {
-  state.tokenflag = true
-  state.token = ''
-  return state
+  return {
+    tokenflag: true,
+    token: ''
+  }
 }
 
 // TFF - set token flag false
 function runextTFF (state) {
-  state.tokenflag = false
-  return state
+  return { tokenflag: false }
 }
 
 // SCN - if flag, scan input character; if token flag, add to token (extended only)
