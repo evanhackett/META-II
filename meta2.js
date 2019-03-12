@@ -9,18 +9,23 @@ function removeWhitespace (state) {
   return inp
 }
 
+// since findlabel is used as a return value in other functions,
+// it must not only return the local delta it creates. Rather,
+// it must also return the deltas built up from the functions that called findlabel.
+// This is why we return an updated copy of state instead of just { pc, exitlevel }
 function findlabel(s, state) {
   // fast goto
-  state.pc = state.ic.indexOf('\n'+s+'\n')
-  let found = (state.pc >= 0)
-  if (!found) state.pc = state.ic.indexOf('\n'+s+'\r')
-  found = (state.pc >= 0)
-  if (found) state.pc = state.pc + s.length + 1
+  let pc = state.ic.indexOf('\n'+s+'\n')
+  let found = (pc >= 0)
+  if (!found) pc = state.ic.indexOf('\n'+s+'\r')
+  found = (pc >= 0)
+  if (found) pc += s.length + 1
   // notify on unresolved label and stop interpret
   if (! found) {
     console.error('label '+s+' not found!\n')
-    state.exitlevel = true
+    return updateState(state, { pc, exitlevel: true })
   }
+  return updateState(state, { pc })
 }
 
 function runTST(s, state) {
@@ -105,31 +110,35 @@ function runSR (state) {
 }
 
 function runADR (state) {
-  state.gnlabel = 1
-  state.inp = 0
-  state.margin = 0
-  state.stackframe = 0
-  // initialize first stackframe
-  state.stack[state.stackframe * state.stackframesize + 0] = 0         // GN1  also GN (extended only)
-  state.stack[state.stackframe * state.stackframesize + 1] = 0         // GN2
-  state.stack[state.stackframe * state.stackframesize + 2] = -1        // return pc value
-  state.stack[state.stackframe * state.stackframesize + 3] = state.symbolarg // rule name called for error messages
-  state.stack[state.stackframe * state.stackframesize + 4] = state.margin    // left margin (extended only)
-  findlabel(state.symbolarg, state)
+  const newState = {
+    gnlabel: 1,
+    inp: 0,
+    margin: 0,
+    stackframe: 0,
+    stack: Array.from(state.stack)
+  }
 
-  return state
+  // initialize first stackframe
+  newState.stack[0] = 0         // GN1  also GN (extended only)
+  newState.stack[1] = 0         // GN2
+  newState.stack[2] = -1        // return pc value
+  newState.stack[3] = state.symbolarg // rule name called for error messages
+  newState.stack[4] = newState.margin    // left margin (extended only)
+
+  return findlabel(state.symbolarg, updateState(state, newState))
 }
 
 function runCLL (state) {
+  const stack = Array.from(state.stack)
+  let stackframe = state.stackframe
   // push and initialize a new stackframe
-  state.stackframe++
-  state.stack[state.stackframe * state.stackframesize + 0] = 0         // GN1  also GN (extended only)
-  state.stack[state.stackframe * state.stackframesize + 1] = 0         // GN2
-  state.stack[state.stackframe * state.stackframesize + 2] = state.pc        // return pc value
-  state.stack[state.stackframe * state.stackframesize + 3] = state.symbolarg // rule name called for error messages
-  state.stack[state.stackframe * state.stackframesize + 4] = state.margin    // left margin (needed on backtrack)
-  findlabel(state.symbolarg, state)
-  return state
+  stackframe++
+  stack[stackframe * state.stackframesize + 0] = 0         // GN1  also GN (extended only)
+  stack[stackframe * state.stackframesize + 1] = 0         // GN2
+  stack[stackframe * state.stackframesize + 2] = state.pc        // return pc value
+  stack[stackframe * state.stackframesize + 3] = state.symbolarg // rule name called for error messages
+  stack[stackframe * state.stackframesize + 4] = state.margin    // left margin (needed on backtrack)
+  return findlabel(state.symbolarg, updateState(state, {stack, stackframe}))
 }
 
 function runEND (state) {
@@ -156,18 +165,15 @@ function runSET (state) {
 }
 
 function runB (state) {
-  findlabel(state.symbolarg, state)
-  return state
+  return findlabel(state.symbolarg, state)
 }
 
 function runBT (state) {
-  if (state.flag) findlabel(state.symbolarg, state)
-  return state
+  return state.flag ? findlabel(state.symbolarg, state) : state
 }
 
 function runBF (state) {
-  if (! state.flag) findlabel(state.symbolarg, state)
-  return state
+  return !state.flag ? findlabel(state.symbolarg, state) : state
 }
 
 function runBE (state) {
