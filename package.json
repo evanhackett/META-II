@@ -4,11 +4,14 @@
   "description": "",
   "main": "meta2.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "colortape test/test.js"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "tape": "^4.10.1"
+  },
+  "devDependencies": {
+    "tape": "^4.10.1",
+    "colortape": "^0.1.2"
   }
 }

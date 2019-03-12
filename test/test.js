@@ -1,5 +1,5 @@
 const test = require('tape')
-const meta2 = require('./meta2')
+const meta2 = require('../meta2')
 const fs = require('fs')
 
 const meta2_src = fs.readFileSync('./input_examples/meta2_src.txt', 'utf8')
