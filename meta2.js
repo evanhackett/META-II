@@ -142,11 +142,10 @@ function runCLL (state) {
 }
 
 function runEND (state) {
-  state.exitlevel = true
   if (!state.flag)
     console.error('first rule "'+ state.stack[state.stackframe * state.stackframesize + 3] + '" failed')
 
-  return state
+  return { exitlevel: true }
 }
 
 function runR (state) {
