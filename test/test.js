@@ -7,6 +7,7 @@ const meta2_compiled = fs.readFileSync('./compiled_examples/meta2_compiled.txt',
 const aexp_assignments_compiler = fs.readFileSync('./compiled_examples/aexp_assignments_compiler.txt', 'utf8')
 const aexp_assignments_compiler_desc = fs.readFileSync('./input_examples/aexp_assignment_compiler_description.txt', 'utf8')
 
+
 // we are expecting the output to be equal to the interpreter_input,
 // meaning we expect the meta2 interpreter to generate itself.
 test('meta2 should generate itself', t => {
@@ -43,5 +44,13 @@ test('aexp compiler should generate psuedo assembly for example assignments', t 
   const aexp_example = fs.readFileSync('./input_examples/aexp_demo_input.txt', 'utf8')
   const compiled_assignments = fs.readFileSync('./compiled_examples/compiled_assignments.txt', 'utf8')
   t.equal(meta2.compile(aexp_example, aexp_assignments_compiler), compiled_assignments)
+  t.end()
+})
+
+test('js compiler should compile to js', t => {
+  const js_compiler_desc = fs.readFileSync('./input_examples/convert_io9_to_js_functions.txt', 'utf8')
+  const js_compiler = fs.readFileSync('./compiled_examples/compile_to_js_functions.txt', 'utf8')
+  const js_functions_compiled = fs.readFileSync('./compiled_examples/js_functions.txt', 'utf8')
+  t.equal(meta2.compile(js_compiler_desc, js_compiler), js_functions_compiled)
   t.end()
 })
