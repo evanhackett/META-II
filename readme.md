@@ -4,6 +4,8 @@ Alan Kay said implementing META II "is a test for graduate students". I thought 
 
 There is a fantastic [tutorial by James Neighbors](http://www.bayfronttechnologies.com/mc_tutorial.html) that I highly recommend going through. The code in this repo was based on the code found in the [workshop page](http://www.bayfronttechnologies.com/mc_workshop.html).
 
+Note, this project here is a WIP. It does currently work (it can compile itself, for example) but there is more to do. I will fill out more info on this readme about how to run it once it is more complete.
+
 ----
 ## What is META II?
 Meta II is compiler generator that can generate itself.
