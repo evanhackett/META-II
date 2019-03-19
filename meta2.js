@@ -1,12 +1,7 @@
-// remove whitespace (space, newline, return, tab)
-// returns updated inp
-function removeWhitespace (state) {
+// this function is used to skip over whitespace chars in the input buffer.
+function skipWhiteSpace (inbuf, inp) {
   const isWhiteSpace = c => c == ' '|| c == '\n' || c == '\r' || c == '\t'
-  let inp = state.inp
-  while (isWhiteSpace(state.inbuf.charAt(inp))) {
-    inp++
-  }
-  return inp
+  return inp + inbuf.slice(inp).split('').findIndex(c => !isWhiteSpace(c))
 }
 
 // since findlabel is used as a return value in other functions,
@@ -29,7 +24,7 @@ function findlabel(s, state) {
 }
 
 function runTST(s, state) {
-  let inp = removeWhitespace(state)
+  let inp = skipWhiteSpace(state.inbuf, state.inp)
 
   // test string case insensitive
   let flag = true
@@ -44,7 +39,7 @@ function runTST(s, state) {
 }
 
 function runID (state) {
-  let inp = removeWhitespace(state)
+  let inp = skipWhiteSpace(state.inbuf, state.inp)
   let flag = state.flag
   let token = ''
 
@@ -67,7 +62,7 @@ function runID (state) {
 }
 
 function runNUM (state) {
-  let inp = removeWhitespace(state)
+  let inp = skipWhiteSpace(state.inbuf, state.inp)
   let flag = state.flag
   let token = ''
 
@@ -87,7 +82,7 @@ function runNUM (state) {
 }
 
 function runSR (state) {
-  let inp = removeWhitespace(state)
+  let inp = skipWhiteSpace(state.inbuf, state.inp)
   let flag = state.flag
   let token = ''
 
@@ -509,4 +504,5 @@ function compile(src_input, interpreter_input) {
 module.exports = {
   compile,
   updateState,
+  skipWhiteSpace,
 }

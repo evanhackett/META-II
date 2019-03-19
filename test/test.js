@@ -54,3 +54,10 @@ test('js compiler should compile to js', t => {
   t.equal(meta2.compile(js_compiler_desc, js_compiler), js_functions_compiled)
   t.end()
 })
+
+test('skipWhiteSpace should return index of next non-whitespace char', t => {
+  const inbuf = "abcd efg hij  k  l  "
+  t.equal(meta2.skipWhiteSpace("abcd efg hij  k  l  ", 3), 3)
+  t.equal(meta2.skipWhiteSpace("abcd efg hij  k  l  ", 4), 5)
+  t.end()
+})
