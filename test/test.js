@@ -28,7 +28,7 @@ test('updateState function should return modified state without mutating origina
     pc: state.pc + 1
   }
 
-  t.deepEqual(meta2.updateState(state, change), {pc: 2, outbuf: 'goodbye', flag: false})
+  t.deepEqual(meta2.updateStatePure(state, change), {pc: 2, outbuf: 'goodbye', flag: false})
   t.deepEqual(state, {pc: 1, outbuf: 'hello', flag: false})
   t.deepEqual(change, {pc: 2, outbuf: 'goodbye'})
 

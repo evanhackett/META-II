@@ -18,9 +18,9 @@ function findlabel(s, state) {
   // notify on unresolved label and stop interpret
   if (! found) {
     console.error('label '+s+' not found!\n')
-    return updateState(state, { pc, exitlevel: true })
+    return updateStatePure(state, { pc, exitlevel: true })
   }
-  return updateState(state, { pc })
+  return updateStatePure(state, { pc })
 }
 
 function runTST(s, state) {
@@ -120,7 +120,7 @@ function runADR (state) {
   newState.stack[3] = state.symbolarg // rule name called for error messages
   newState.stack[4] = newState.margin    // left margin (extended only)
 
-  return findlabel(state.symbolarg, updateState(state, newState))
+  return findlabel(state.symbolarg, updateStatePure(state, newState))
 }
 
 function runCLL (state) {
@@ -133,7 +133,7 @@ function runCLL (state) {
   stack[stackframe * state.stackframesize + 2] = state.pc        // return pc value
   stack[stackframe * state.stackframesize + 3] = state.symbolarg // rule name called for error messages
   stack[stackframe * state.stackframesize + 4] = state.margin    // left margin (needed on backtrack)
-  return findlabel(state.symbolarg, updateState(state, {stack, stackframe}))
+  return findlabel(state.symbolarg, updateStatePure(state, {stack, stackframe}))
 }
 
 function runEND (state) {
@@ -402,13 +402,13 @@ function interpretOp (state) {
   // intrepreter op case branch
   switch (op) {
     // original META II order codes
-    case 'ADR': return runADR(updateState(state, argsymbol(state)))          // ADR - specify starting rule
-    case 'B':   return runB(updateState(state, argsymbol(state)))            // B   - unconditional branch to label
-    case 'BT':  return runBT(updateState(state, argsymbol(state)))           // BT  - branch if switch true to label
-    case 'BF':  return runBF(updateState(state, argsymbol(state)))           // BF  - branch if switch false to label
+    case 'ADR': return runADR(updateStatePure(state, argsymbol(state)))          // ADR - specify starting rule
+    case 'B':   return runB(updateStatePure(state, argsymbol(state)))            // B   - unconditional branch to label
+    case 'BT':  return runBT(updateStatePure(state, argsymbol(state)))           // BT  - branch if switch true to label
+    case 'BF':  return runBF(updateStatePure(state, argsymbol(state)))           // BF  - branch if switch false to label
     case 'BE':  return runBE(state)                         // BE  - branch if switch false to error halt
-    case 'CLL': return runCLL(updateState(state, argsymbol(state)))          // CLL - call rule at label
-    case 'CL':  const s = updateState(state, argstring(state)); return runCL(s.stringarg, s)  // CL  - copy given string argument to output
+    case 'CLL': return runCLL(updateStatePure(state, argsymbol(state)))          // CLL - call rule at label
+    case 'CL':  const s = updateStatePure(state, argstring(state)); return runCL(s.stringarg, s)  // CL  - copy given string argument to output
     case 'CI':  return runCI(state)                         // CI  - copy scanned token to output
     case 'END': return runEND(state)                        // END - pseudo op, end of source
     case 'GN1': return runGN1(state)                        // GN1 - make and output label 1
@@ -420,7 +420,7 @@ function interpretOp (state) {
     case 'R':   return runR(state)                          // R   - return from rule call with CLL
     case 'SET': return runSET(state)                        // SET - set switch true
     case 'SR':  return runSR(state)                         // SR  - recognize string token including single quotes
-    case 'TST': const s2 = updateState(state, argstring(state)); return runTST(s2.stringarg, s2) // TST - test for given string argument, if found set switch
+    case 'TST': const s2 = updateStatePure(state, argstring(state)); return runTST(s2.stringarg, s2) // TST - test for given string argument, if found set switch
     // extensions to provide label and nested output definition
     case 'GN':  return runextGN(state)                      // GN  - make and output unique number
     case 'LMI': return runextLMI(state)                     // LMI - left margin increase
@@ -428,9 +428,9 @@ function interpretOp (state) {
     case 'NL':  return runextNL(state)                      // NL  - new line output
     case 'TB':  return runextTB(state)                      // TB  - output a tab
     // extensions to provide token definition
-    case 'CE':  return runextCE(updateState(state, argsymbol(state)).symbolarg)        // CE  - compare input char to code for equal
-    case 'CGE': return runextCGE(updateState(state, argsymbol(state)).symbolarg)       // CGE - compare input char to code for greater or equal
-    case 'CLE': return runextCLE(updateState(state, argsymbol(state)).symbolarg)       // CLE - compare input char to code for less or equal
+    case 'CE':  return runextCE(updateStatePure(state, argsymbol(state)).symbolarg)        // CE  - compare input char to code for equal
+    case 'CGE': return runextCGE(updateStatePure(state, argsymbol(state)).symbolarg)       // CGE - compare input char to code for greater or equal
+    case 'CLE': return runextCLE(updateStatePure(state, argsymbol(state)).symbolarg)       // CLE - compare input char to code for less or equal
     case 'LCH': return runextLCH(state)                     // LCH - literal character code to token as string
     case 'NOT': return runextNOT(state)                     // NOT - complement flag
     case 'RF':  if (!state.flag) return runR(state)         // RF  - return if switch false
@@ -440,7 +440,7 @@ function interpretOp (state) {
     // extensions for backtracking, error handling, and char code output
     case 'PFF': return { flag: false }                    // PFF - parse flag set to false
     case 'PFT': return { flag: true }                     // PFT - parse flag set to true (AKA SET)
-    case 'CC':  return runextCC(updateState(state, argsymbol(state)).symbolarg)        // CC - copy char code to output
+    case 'CC':  return runextCC(updateStatePure(state, argsymbol(state)).symbolarg)        // CC - copy char code to output
     default:
         console.error('ERROR: unknown interpret op \''+op+'\'')
         return { exitlevel: true }
@@ -451,8 +451,12 @@ function interpretOp (state) {
 
 // takes in a state and a state delta, which describes what parts of the state
 // to update, and returns a new state object that has the updates.
-// Maybe want to use immutablejs. This looks similar to "merge": https://immutable-js.github.io/immutable-js/docs/#/merge
 function updateState(state, delta) {
+  return Object.assign(state, delta)
+}
+
+// same as updateState except it doesn't modify the state argument (makes a deep copy)
+function updateStatePure(state, delta) {
   const deepCopyOfState = JSON.parse(JSON.stringify(state))
   return Object.assign(deepCopyOfState, delta)
 }
@@ -466,8 +470,8 @@ function interpret (state) {
     state = updateState(state, { pc })
 
     // interpretOp only needs to return the state delta (not the complete state)
-    // this means each op should be refactored to return a delta.
-    // state updates would then only need to happen in this one function.
+    // this means each op returns a state delta describing what state variables changed.
+    // state updates therefore only need to happen in this one function.
     state = updateState(state, interpretOp(state))
 
     if (state.exitlevel) return state
@@ -503,6 +507,6 @@ function compile(src_input, interpreter_input) {
 
 module.exports = {
   compile,
-  updateState,
+  updateStatePure,
   skipWhiteSpace,
 }
